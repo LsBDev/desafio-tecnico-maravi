@@ -1,0 +1,1 @@
+Instruções gerais de como rodar o projeto: Tanto Back quanto Front.
