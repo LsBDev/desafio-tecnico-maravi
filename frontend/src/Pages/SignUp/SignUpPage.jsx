@@ -7,7 +7,7 @@ import styled from "styled-components"
 
 export default function SignUpPage() {
     const [email, setEmail] = useState("")
-    const [name, setName] = useState("")
+    const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
     const navigate = useNavigate()
 
@@ -15,7 +15,7 @@ export default function SignUpPage() {
         event.preventDefault()
         // desabilitar campos, enquanto aguarda a resposta?
         const user = {
-            name: name, email: email, password: password
+            username: username, email: email, password: password
         }
         axios.post(`${process.env.REACT_APP_API_URL}/users`, user)
         .then((res) => {
@@ -33,7 +33,7 @@ export default function SignUpPage() {
         <Card>
             <h1>Cadastro</h1>
             <Form onSubmit={signup}>
-                <Input placeholder="Nome" type="name" value={name} onChange={e => setName(e.target.value)} required/>
+                <Input placeholder="Nome" type="name" value={username} onChange={e => setUsername(e.target.value)} required/>
                 <Input placeholder="E-mail" type="email" value={email} onChange={e => setEmail(e.target.value)} required/>
                 <Input placeholder="Senha" type="password" value={password} onChange={e => setPassword(e.target.value)} required/>
                 <Button type="submit">Entrar</Button>

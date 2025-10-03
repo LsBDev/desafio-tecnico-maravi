@@ -11,7 +11,7 @@ export default function Home() {
 
     // Fazer uma função de carregamento de dados? Será que vai ser preciso mesmo usando redis?
     useEffect(() => {
-        axios.get(`${API_URL}`)
+        axios.get(`${API_URL}/onibus-rj`)
         .then(res => {
             const dadosRecebidos = res.data || [] // Dados brutos (lista de todos os ônibus)
             setDadosBrutos(dadosRecebidos)
