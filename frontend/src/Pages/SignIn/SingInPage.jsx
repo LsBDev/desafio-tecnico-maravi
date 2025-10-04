@@ -20,8 +20,7 @@ export default function SignInPage() {
             navigate("/home")
         })
         .catch((err) => {
-            console.log(err.response)
-            alert("Deu erro!")
+            console.log(err.response.data)
         })
     }
 

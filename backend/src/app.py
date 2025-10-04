@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Depends
 import httpx
 from http import HTTPStatus
 from .config import settings, setup_cors
@@ -6,6 +6,7 @@ from .schemas import UserRegistration, UserPublic, UserLogin
 from sqlalchemy import select
 from .database import get_session
 from .models import User
+from .security import get_password_hash, verify_password
 
 app = FastAPI()
 setup_cors(app)
@@ -16,11 +17,15 @@ url ="dataInicial=2024-01-29+15:40:00&dataFinal=2024-01-29+15:43:00"
 def root():
     return {'Health': 'Tudo Certo!'}
 
+@app.get("/users", status_code=HTTPStatus.OK, response_model=list[UserPublic])
+def get_users(session=Depends(get_session)):
+    users =  session.scalars(select(User)).all()
+    return users
 
-@app.post("/users", status_code=HTTPStatus.CREATED, response_model=UserPublic)
-def create_user(user: UserRegistration):
+# cadastro de usuários
+@app.post("/sign-up", status_code=HTTPStatus.CREATED, response_model=UserPublic)
+def create_user(user: UserRegistration, session=Depends(get_session)):
     # Fazer a criação do usuário no banco
-    session = get_session()
     user_db = session.scalar(
         select(User).where(
             (User.username == user.username) | (User.email == user.email)
@@ -37,9 +42,10 @@ def create_user(user: UserRegistration):
                 status_code=HTTPStatus.BAD_REQUEST,
                 detail="Email já existe"
             )
-        # Guardar um token ao inv~es da senha, criptografar a senha
+        # Guardar um token ao invés da senha, criptografar a senha
+    hash = get_password_hash(user.password)
     user_db = User(
-        username=user.username, email=user.email, password=user.password
+        username=user.username, email=user.email, password=hash
     )
     session.add(user_db)
     session.commit()
@@ -47,10 +53,26 @@ def create_user(user: UserRegistration):
             
     return user_db
 
-
+# login
 @app.post("/sign-in", status_code=HTTPStatus.OK)
-def sign_in_user(user: UserLogin):
+def sign_in_user(user: UserLogin, session=Depends(get_session)):
     # Fazer um get no banco e devolver nome e email -> Usar o schema UserPublic
+    user_db = session.scalar(
+        select(User).where(
+            User.email == user.email
+        )
+    )
+    # validar senha -> criptografia
+    if not user_db:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail="Dados incorretos"
+        )
+    if not verify_password(user.password, user_db.password):
+        raise HTTPException(
+            status_code=HTTPStatus.UNAUTHORIZED,
+            detail="Dados incorretos"
+        )
     return user
 
 

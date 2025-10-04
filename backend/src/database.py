@@ -7,4 +7,6 @@ engine = create_engine(settings.database_url)
 
 def get_session():
     with Session(engine) as session:
-        return session
+        yield session
+
+#    yield -> Abre e fecha a sessão do db
