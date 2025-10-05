@@ -1,6 +1,7 @@
 from sqlalchemy.orm import registry, Mapped, mapped_column, relationship
-# from sqlalchemy import ForeingKey
-# from typing import List
+from sqlalchemy import ForeignKey
+from typing import List
+from datetime import time, date
 
 table_registry = registry()
 
@@ -11,3 +12,20 @@ class User:
     username: Mapped[str] = mapped_column()
     email: Mapped[str] = mapped_column(unique=True)
     password: Mapped[str]
+    configs: Mapped[List["NotificationConfig"]] = relationship(
+    back_populates="user", cascade="all, delete-orphan", default_factory=list
+    ) 
+
+@table_registry.mapped_as_dataclass
+class NotificationConfig:
+    __tablename__ = 'notification_config'
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)    
+    user_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
+    notification_date: Mapped[date]
+    line_code: Mapped[str]    
+    latitude: Mapped[float]
+    longitude: Mapped[float]    
+    start_time: Mapped[time] 
+    end_time: Mapped[time]    
+    user: Mapped[User] = relationship(back_populates="configs", init=False)    
+    is_active: Mapped[bool] = mapped_column(default=True)

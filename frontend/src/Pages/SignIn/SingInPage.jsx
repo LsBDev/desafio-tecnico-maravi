@@ -7,17 +7,29 @@ export default function SignInPage() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const navigate = useNavigate()
+    const [token, setToken] = useState()
 
     function login(event) {
         event.preventDefault()
-        // desabilitar campos ??
-        const user = {
-            email, password
-        }
-        axios.post(`${process.env.REACT_APP_API_URL}/sign-in`, user)
+        // desabilitar e apaga os campos quando vier a resposta.
+        // const user = {
+        //   email, password
+        // }
+        const formData = new URLSearchParams();
+        formData.append('username', email); // A chave é 'username'
+        formData.append('password', password);
+
+        axios.post(`${process.env.REACT_APP_API_URL}/auth/token`, formData, 
+          {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            }
+          }
+        )
         .then((res) => {
-            console.log(res.data) 
-            navigate("/home")
+          setToken("token:", res.data.access_token)
+          console.log(res.data)
+          navigate("/home")
         })
         .catch((err) => {
             console.log(err.response.data)

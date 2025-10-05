@@ -4,11 +4,14 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 class Settings(BaseSettings):
-    api_url: str
-    database_url: str
-    frontend_origin: str = "http://localhost:3000"
-    class Config:
-        env_file = ".env"
+  api_url: str
+  database_url: str
+  frontend_origin: str = "http://localhost:3000"
+  jwt_secret_key: str
+  algorithm: str
+  access_token_expire_minutes: int
+  class Config:
+    env_file = ".env"
 
 settings = Settings()
 

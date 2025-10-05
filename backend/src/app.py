@@ -1,17 +1,19 @@
-from fastapi import FastAPI, HTTPException, Depends
-import httpx
+from fastapi import FastAPI, Depends
 from http import HTTPStatus
 from .config import settings, setup_cors
-from .schemas import UserRegistration, UserPublic, UserLogin
+from .schemas import UserPublic
 from sqlalchemy import select
 from .database import get_session
 from .models import User
-from .security import get_password_hash, verify_password
+from .routes import auth, buses
+
 
 app = FastAPI()
 setup_cors(app)
+app.include_router(auth.router)
+app.include_router(buses.router)
 
-url ="dataInicial=2024-01-29+15:40:00&dataFinal=2024-01-29+15:43:00"
+# Rever a questão do .env -> Corrigir, está subindo para o github, não está no gitignore
 
 @app.get("/", status_code=HTTPStatus.OK)
 def root():
@@ -22,74 +24,5 @@ def get_users(session=Depends(get_session)):
     users =  session.scalars(select(User)).all()
     return users
 
-# cadastro de usuários
-@app.post("/sign-up", status_code=HTTPStatus.CREATED, response_model=UserPublic)
-def create_user(user: UserRegistration, session=Depends(get_session)):
-    # Fazer a criação do usuário no banco
-    user_db = session.scalar(
-        select(User).where(
-            (User.username == user.username) | (User.email == user.email)
-        )
-    )
-    if user_db:
-        if user_db.username == user.username:
-            raise HTTPException(
-                status_code=HTTPStatus.BAD_REQUEST,
-                detail="Usuário já existe"
-            )
-        elif user_db.email == user.email:
-            raise HTTPException(
-                status_code=HTTPStatus.BAD_REQUEST,
-                detail="Email já existe"
-            )
-        # Guardar um token ao invés da senha, criptografar a senha
-    hash = get_password_hash(user.password)
-    user_db = User(
-        username=user.username, email=user.email, password=hash
-    )
-    session.add(user_db)
-    session.commit()
-    session.refresh(user_db)
-            
-    return user_db
 
-# login
-@app.post("/sign-in", status_code=HTTPStatus.OK)
-def sign_in_user(user: UserLogin, session=Depends(get_session)):
-    # Fazer um get no banco e devolver nome e email -> Usar o schema UserPublic
-    user_db = session.scalar(
-        select(User).where(
-            User.email == user.email
-        )
-    )
-    # validar senha -> criptografia
-    if not user_db:
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST,
-            detail="Dados incorretos"
-        )
-    if not verify_password(user.password, user_db.password):
-        raise HTTPException(
-            status_code=HTTPStatus.UNAUTHORIZED,
-            detail="Dados incorretos"
-        )
-    return user
-
-
-# Colocar aqui as regras que filtram os dados recebidos da APi do ônibus // Na verdade ver qual a melhor estrutura 
-@app.get("/onibus-rj", status_code=HTTPStatus.OK)
-async def get_bus_data():
-    # Fazer aqui a lógica de filtro dos dados
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.get(settings.api_url + url, timeout = 10.0)
-            response.raise_for_status()
-            return response.json()
-        
-        except httpx.HTTPStatusError as exc:
-            return {"error": f"Erro na requisição: {exc.response.status_code} - {exc.response.text}"}
-        except Exception as exc:
-            return {"error": f"Ocorreu um erro: {exc}"}
-        
-# resposta -> lista de dicionários.
 

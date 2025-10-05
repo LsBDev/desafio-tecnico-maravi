@@ -17,13 +17,13 @@ export default function SignUpPage() {
         const user = {
             username: username, email: email, password: password
         }
-        axios.post(`${process.env.REACT_APP_API_URL}/sign-up`, user)
+        axios.post(`${process.env.REACT_APP_API_URL}/auth/sign-up`, user)
         .then((res) => {
             console.log(res.data)
             navigate("/")
         })
         .catch((err) => {
-            console.log(err.response.data)
+            console.error(err.response.data)
         })
     }
 
