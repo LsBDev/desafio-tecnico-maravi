@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr
+from datetime import date, time
 
 class UserRegistration(BaseModel):
   username: str
@@ -21,3 +22,11 @@ class LoginResponse(BaseModel):
   access_token: str
   token_type: str
   user: UserPublic
+
+class NotificationCreate(BaseModel):
+    linha: str
+    latitude: float
+    longitude: float
+    data: date
+    hora_inicio: time
+    hora_fim: time

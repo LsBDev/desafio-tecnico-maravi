@@ -1,56 +1,61 @@
 import axios from "axios"
-import { useState } from "react"
+import AuthContext from "../../contexts/AuthContext.js"
+import UserContext from "../../contexts/UserContext.js"
+import { useState, useContext } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
 export default function SignInPage() {
-    const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
-    const navigate = useNavigate()
-    const [token, setToken] = useState()
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const navigate = useNavigate()
+  const {setToken} = useContext(AuthContext)
+  const {setUser} = useContext(UserContext);
 
-    function login(event) {
-        event.preventDefault()
-        // desabilitar e apaga os campos quando vier a resposta.
-        // const user = {
-        //   email, password
-        // }
-        const formData = new URLSearchParams();
-        formData.append('username', email); // A chave é 'username'
-        formData.append('password', password);
+  function login(event) {
+      event.preventDefault()
+      // desabilitar e apaga os campos quando vier a resposta.
+      // const user = {
+      //   email, password
+      // }
+      const formData = new URLSearchParams();
+      formData.append('username', email); // A chave é 'username'
+      formData.append('password', password);
 
-        axios.post(`${process.env.REACT_APP_API_URL}/auth/token`, formData, 
-          {
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded'
-            }
+      axios.post(`${process.env.REACT_APP_API_URL}/auth/token`, formData, 
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
           }
-        )
-        .then((res) => {
-          setToken("token:", res.data.access_token)
-          console.log(res.data)
-          navigate("/home")
-        })
-        .catch((err) => {
-            console.log(err.response.data)
-        })
-    }
+        }
+      )
+      .then((res) => {
+        setToken("token:", res.data.access_token)
+        setUser("user", res.data.user.username)
+        localStorage.setItem("token", res.data.access_token)
+        localStorage.setItem("user", res.data.user.username)
+        console.log(res.data)
+        navigate("/home")
+      })
+      .catch((err) => {
+          console.log(err.response.data)
+      })
+  }
 
-    return (
-        <Container>
-        <Card>
-            <h1>Login</h1>
-            <Form onSubmit={login}>
-                <Input placeholder="E-mail" type="email" value={email} onChange={e => setEmail(e.target.value)} required/>
-                <Input placeholder="Senha" type="password" value={password} onChange={e => setPassword(e.target.value)} required/>
-                <Button type="submit">Entrar</Button>
-            </Form>
-            {/* <Link to="/signup">cadastro</Link> */}
-            <Cadastro to="/signup">Cadastre-se!</Cadastro>
-        </Card>
-        </Container>
+  return (
+      <Container>
+      <Card>
+          <h1>Login</h1>
+          <Form onSubmit={login}>
+              <Input placeholder="E-mail" type="email" value={email} onChange={e => setEmail(e.target.value)} required/>
+              <Input placeholder="Senha" type="password" value={password} onChange={e => setPassword(e.target.value)} required/>
+              <Button type="submit">Entrar</Button>
+          </Form>
+          <Cadastro to="/signup">Cadastre-se!</Cadastro>
+      </Card>
+      </Container>
 
-    )
+  )
 }
 const Container = styled.div`
   min-height: 100vh;

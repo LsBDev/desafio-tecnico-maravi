@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import styled from "styled-components"
 import axios from "axios"
+import { useNavigate } from "react-router-dom"
 
 
 const API_URL = process.env.REACT_APP_API_URL
@@ -16,6 +17,7 @@ export default function Home() {
   const [horaInicio, setHoraInicio] = useState("")
   const [horaFim, setHoraFim] = useState("")
   const [dadosOnibus, setDadosOnibus] = useState(null)
+  const navigate = useNavigate()
 
   // Problema com fuso, precisei trocar a lógica.
   useEffect(() => {
@@ -29,51 +31,71 @@ export default function Home() {
   }, []);
 
   function buscaDadosOnibus(event) {
-        event.preventDefault()
-        // API de geocodificação Nominatim
-        axios.get(NOMINATIM_API_URL, {
-            params: {
-              q: `${ponto}, Rio de Janeiro`,
-              format: "json",
-              limit: 1,
-            },
-        })
-        .then(geoResponse => {
-          if (geoResponse.data && geoResponse.data.length > 0) {
-            const { lat, lon } = geoResponse.data[0];
-            console.log(lat, lon);
+    event.preventDefault()
 
-            // request backend com as novas coordenadas //receber esses dados no Back, tratar as resposta da api de onibus e enviar de volta.
-            return axios.get(`${API_URL}/buses/onibus-rj`, {
-              params: {
-                linha,
-                latitude: lat,
-                longitude: lon,
-                data: dataNotificacao,
-                hora_inicio: horaInicio,
-                hora_fim: horaFim,
-              },
-            });
-          } else {
-            // Se não encontrar o ponto, lança um erro, volta uma camada, para ir para o catch mais próximo.
-            // posso colocar um middleware de erro depois
-            throw new Error("Ponto não encontrado.");
-          }
-        })
-        .then(res => {
-            // 3. Salvar os dados recebidos do backend
-            setDadosOnibus(res.data);
-            console.log("Dados dos ônibus recebidos:", res.data);
-        })
-        .catch(err => {
-            console.error("Erro na busca de dados:", err.response);
-            if (err.message === "Ponto não encontrado.") {
-                alert("Não foi possível encontrar as coordenadas para o ponto informado. Tente um endereço mais preciso.");
-            } else {
-                alert("Ocorreu um erro ao buscar as informações. Por favor, tente novamente mais tarde.");
-            }
-        });
+    if (horaInicio && horaFim) {
+      const [hI, mI] = horaInicio.split(":").map(Number)
+      const [hF, mF] = horaFim.split(":").map(Number)
+
+      const totalMinutosInicio = hI*60 + mI
+      const totalMinutosFim = hF*60 + mF
+      if ((totalMinutosFim - totalMinutosInicio) <= 0 || (totalMinutosFim - totalMinutosInicio) > 60) {
+        alert("O intervalo de horário deve ser de no máximo 1 hora.")
+        return
+      }
     }
+
+    const token = localStorage.getItem("token")
+    if(!token) {
+      alert("Sua sessão expirou. Faça login novamente")
+      navigate("/")
+    }
+    // API de geocodificação Nominatim
+    axios.get(NOMINATIM_API_URL, {
+        params: {
+          q: `${ponto}, Rio de Janeiro`,
+          format: "json",
+          limit: 1,
+        },
+    })
+    .then(geoResponse => {
+      if (geoResponse.data && geoResponse.data.length > 0) {
+        const { lat, lon } = geoResponse.data[0];
+        console.log(lat, lon);
+        return axios.post(`${API_URL}/buses/notification`, 
+          { 
+            linha,
+            latitude: lat,
+            longitude: lon,
+            data: dataNotificacao,
+            hora_inicio: horaInicio,
+            hora_fim: horaFim,
+          }, 
+          { 
+            headers: {
+              Authorization: `Bearer ${token}`
+            },
+          }
+        );
+      } else {
+        // Se não encontrar o ponto, lança um erro, volta uma camada, para ir para o catch mais próximo.
+        // posso colocar um middleware de erro depois
+        throw new Error("Ponto não encontrado.");
+      }
+    })
+    .then(res => {
+        setDadosOnibus(res.data);
+        console.log("Dados dos ônibus recebidos:", res.data);
+    })
+    .catch(err => {
+      console.error("Erro na busca de dados:", err.response);
+      if (err.message === "Ponto não encontrado.") {
+          alert("Não foi possível encontrar as coordenadas para o ponto informado. Tente um endereço mais preciso.");
+      } else {
+          alert("Ocorreu um erro ao buscar as informações. Por favor, tente novamente mais tarde.");
+      }
+    });
+  }
 
   return (
       <>
@@ -188,8 +210,6 @@ const Input = styled.input`
     box-shadow: 0 0 5px rgba(40, 116, 252, 0.5);
   }
 `
-
-
 const Button = styled.button`
     background: #2874fc;
     color: white;
@@ -201,6 +221,6 @@ const Button = styled.button`
     cursor: pointer;
     transition: 0.3s;
     &:hover {
-        background: #1a5cd8;
+      background: #1a5cd8;
     }
 `
