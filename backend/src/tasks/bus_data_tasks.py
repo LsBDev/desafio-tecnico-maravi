@@ -1,7 +1,7 @@
 import httpx
 import redis
 import json
-from celery_app import celery_app
+from ..celery_app import celery_app
 from ..config import settings
 from datetime import datetime, timedelta
 

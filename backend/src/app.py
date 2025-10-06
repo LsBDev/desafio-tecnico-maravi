@@ -13,6 +13,8 @@ setup_cors(app)
 app.include_router(auth.router)
 app.include_router(buses.router)
 
+
+
 # Rever a questão do .env -> Corrigir, está subindo para o github, não está no gitignore
 
 @app.get("/", status_code=HTTPStatus.OK)
