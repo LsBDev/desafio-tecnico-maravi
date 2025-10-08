@@ -20,6 +20,7 @@ passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 pwdlib = {extras = ["argon2"], version = "^0.2.1"}
 pyjwt = "^2.10.1"
 celery = {extras = ["redis"], version = "^5.5.3"}
+haversine = "^2.9.0"
 
 [build-system]
 requires = ["poetry-core"]

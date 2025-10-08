@@ -24,9 +24,20 @@ class LoginResponse(BaseModel):
   user: UserPublic
 
 class NotificationCreate(BaseModel):
-    linha: str
-    latitude: float
-    longitude: float
-    data: date
-    hora_inicio: time
-    hora_fim: time
+  linha: str
+  latitude: float
+  longitude: float
+  data: date
+  hora_inicio: time
+  hora_fim: time
+
+class NotificationPublic(BaseModel):
+  id: int
+  user_id: int
+  notification_date: date
+  line_code: str
+  latitude: float
+  longitude: float
+  start_time: time
+  end_time: time
+  is_active: bool

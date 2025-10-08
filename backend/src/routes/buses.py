@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException
-import httpx
 from http import HTTPStatus
 from ..config import settings
 from datetime import datetime

@@ -24,7 +24,7 @@ def get_and_store_bus_data():
   url = f"{settings.api_url}?dataInicial={data_inicial.strftime('%Y-%m-%d %H:%M:%S')}&dataFinal={data_final.strftime('%Y-%m-%d %H:%M:%S')}"
 
   try:
-    response = httpx.get(url, timeout=10.0)
+    response = httpx.get(url, timeout=60.0)
     response.raise_for_status()
     bus_data = json.dumps(response.json())
     r.setex("bus_data_current", 60, bus_data) #setex - set with expiration (expira em 60s)
