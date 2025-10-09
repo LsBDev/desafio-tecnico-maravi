@@ -4,9 +4,11 @@ import json
 from ..celery_app import celery_app
 from ..config import settings
 from datetime import datetime, timedelta
+from .manager_tasks import start_notification_process
 
 
 # Configuração da conexão com redis
+# Locks
 
 r = redis.Redis(
   host=settings.redis_host, 
@@ -15,9 +17,8 @@ r = redis.Redis(
   decode_responses=True
 )
 
-@celery_app.task
+@celery_app.task(queue='serial_tasks')
 def get_and_store_bus_data():
-
   data_final = datetime.now()
   data_inicial = data_final - timedelta(minutes=1)
 
@@ -29,6 +30,10 @@ def get_and_store_bus_data():
     bus_data = json.dumps(response.json())
     r.setex("bus_data_current", 60, bus_data) #setex - set with expiration (expira em 60s)
     print("Dados atualizados no Redis.")
+
+    # # Chama a próxima tarefa no fluxo
+    # check_and_send_notification.delay()
+    start_notification_process()
 
   except Exception as exc:
     print(f"Erro ao buscar ou salvar dados dos ônibus: {exc}")

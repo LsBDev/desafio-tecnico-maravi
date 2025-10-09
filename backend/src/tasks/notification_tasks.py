@@ -1,20 +1,15 @@
+# notification_tasks.py
 from ..celery_app import celery_app
 from ..config import settings
 from ..database import get_session
 import redis
-from sqlalchemy import select
+# from sqlalchemy import select
 from sqlalchemy.orm import Session
 from ..models import NotificationConfig, User
 from datetime import datetime, time
 import json
 from ..services.notification_services import travel_time, send_email
 
-# TODO - Remover comentários
-# Fazer conexão com redis, database. Olhar a tabela de notificações e ver 
-# se tem alguma com status ativo e que se enquadra nas lógica de enviar a notificação por e-mail
-# depois pegar a informação do redis, filtrar, tratar os dados e enviar para o front.
-
-# Configuração da conexão com o Redis e o banco de dados
 r = redis.Redis(
   host=settings.redis_host, 
   port=settings.redis_port, 
@@ -23,42 +18,36 @@ r = redis.Redis(
 )
 
 @celery_app.task
-def check_and_send_notification():  
+def check_and_send_notification(notification_id):
+  lock_key = f"lock:notification:{notification_id}"
+  # Tenta adquirir o lock para esta notificação específica
+  lock_acquired = r.set(lock_key, "locked", ex=10, nx=True)
+  print("Adquiriu o lock_key = linha 25 notification_tasks")
+  if not lock_acquired:
+    print(f"[{datetime.now()}] Notificação {notification_id} já está sendo processada por outro worker. Ignorando.")
+    return
+
   session: Session = next(get_session())
-  print("Inicionou a sessão")
   
-    # a notificação é pra hoje? está ativa?
-  hora_atual = datetime.now().time()
-  hoje = datetime.now().date()
-  print(f"[{datetime.now()}] Tarefa iniciada. Data: {hoje}, Hora: {hora_atual}")
-
-  # dados dos onibus no redis
-  bus_data_raw = r.get("bus_data_current")
-  if not bus_data_raw:
-    print(f"[{datetime.now()}] Dados de ônibus não disponíveis no Redis.")
-    session.close()
-    return
-  # depois iterar sobre as notificações,ver qual tem data para hoje e o is_active = True
-  # depois ver se o onibus escolhido está a 10 minutos do ponto marcado pela pessoa. (Para calculo de tempo de viagem estimado: traveltime.com)
   try:
-    bus_data = json.loads(bus_data_raw)
-  except json.JSONDecodeError as e:
-    print(f"[{datetime.now()}] Erro ao decodificar dados do Redis: {e}")
-    session.close()
-    return
+    print(f"[{datetime.now()}] Lock adquirido. Processando notificação {notification_id}...")
+    
+    # Busca a notificação no banco de dados usando o ID
+    notification = session.get(NotificationConfig, notification_id)
+    
+    if not notification:
+      print(f"[{datetime.now()}] Notificação com ID {notification_id} não encontrada.")
+      session.close()
+      return
 
-  notifications = session.scalars(
-    select(NotificationConfig).where(
-      NotificationConfig.is_active == True,
-      NotificationConfig.notification_date == hoje
-      )
-    ).all() # virá como lista 
-  # ver se tem notificação
-  if not notifications:
-    print("Sem notificações até o momento")
-    session.close() # fechar sessão
+    hora_atual = datetime.now().time()
+    hoje = datetime.now().date()
+    
+    # Certifique-se de que a notificação está ativa e a data é a de hoje
+    if not notification.is_active or notification.notification_date != hoje:
+      session.close()
+      return
 
-  for notification in notifications:
     start_time_db = notification.start_time
     end_time_db = notification.end_time
 
@@ -73,33 +62,55 @@ def check_and_send_notification():
       notification.is_active = False
       session.add(notification)
       session.commit()
-      continue # Pula para a próxima notificação
+      session.close()
+      return
 
-    onibus_da_linha = [] # Lista de Onibus, tem vários
+    bus_data_raw = r.get("bus_data_current")
+    if not bus_data_raw:
+      print(f"[{datetime.now()}] Dados de ônibus não disponíveis no Redis.")
+      session.close()
+      return
+    print("linha 69 - Le os dados do redis - notification_tasks")
+    try:
+      bus_data = json.loads(bus_data_raw)
+    except json.JSONDecodeError as e:
+      print(f"[{datetime.now()}] Erro ao decodificar dados do Redis: {e}")
+      session.close()
+      return
+
+    onibus_da_linha = []
     for bus in bus_data:
       if str(bus.get('linha')) == notification.line_code:
         onibus_da_linha.append(bus)
 
+    print("Terminou de preencher o array de onibus - notification_tasks")
     for onibus in onibus_da_linha:
-      # Coordenadas do ônibus e do ponto do usuário
-      print("Entrou no último loop")
-      ponto_onibus = (float(onibus.get('latitude')), float(onibus.get('longitude')))
+
+      latitude_str = onibus.get('latitude').replace(',', '.')
+      longitude_str = onibus.get('longitude').replace(',', '.')
+
+      ponto_onibus = (float(latitude_str), float(longitude_str))
       ponto_usuario = (notification.latitude, notification.longitude)
-      tempo_em_minutos = travel_time(ponto_usuario, ponto_onibus, settings.google_key)
+      tempo_em_minutos = travel_time(ponto_onibus, ponto_usuario, settings.google_key)
+      print(f"linha 90 - Tempo vindo do Travel_time: {tempo_em_minutos} - notification_tasks")
+      print(f"Linha do onibus - {notification.line_code}")
+      print(f"Ordem do onibus - {onibus.get('ordem')}")
 
       if tempo_em_minutos is not None and tempo_em_minutos <= 10:
         user = session.get(User, notification.user_id)
         if user:
-          # Dispara a notificação por e-mail e desativa a notificação no banco
-          send_email(user.email, notification.line_code, tempo_em_minutos)
-          print("Notificou ao usuário")
+          print("Caiu na condição dos 10 minutos, Notificou ao usuário")
+          send_email(user.username, user.email, notification.line_code, tempo_em_minutos)
           notification.is_active = False
           session.add(notification)
           session.commit()
           print(f"[{datetime.now()}] Notificação {notification.id} desativada após envio.")
-
-  session.close()
-
-
-
-
+          break
+      else:
+        print(f"Sem notificação! Tempo de chegada {tempo_em_minutos:.0f}")
+  except Exception as exc:
+    print(f"Erro na tarefa de notificação: {exc}")
+  
+  finally:
+    r.delete(lock_key)
+    session.close()

@@ -14,6 +14,10 @@ class Settings(BaseSettings):
   redis_port: int
   google_key: str
   base_url: str
+  sender_email: str
+  password_email_google: str
+  email_server: str
+  email_port: int
   class Config:
     env_file = ".env"
 
