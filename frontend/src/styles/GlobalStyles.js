@@ -1,4 +1,5 @@
 import { createGlobalStyle } from "styled-components"
+import background from "../assets/imagem_de_fundo.jpeg";
 
 const GlobalStyle = createGlobalStyle`
   html, body, div, span, applet, object, iframe,
@@ -28,7 +29,25 @@ const GlobalStyle = createGlobalStyle`
   }
   body {
     line-height: 1;
-    /* min-width: 375px; */
+    min-width: 375px;
+    background-image: url(${background});
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    margin: 0;
+    padding: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed; // Use fixed para cobrir toda a viewport
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 255, 0.4);
+    z-index: -1; // Coloque o z-index negativo para ficar atrás do conteúdo
+
   }
   ol, ul {
     list-style: none;

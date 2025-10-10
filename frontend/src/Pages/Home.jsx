@@ -1,7 +1,10 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useContext } from "react"
 import styled from "styled-components"
 import axios from "axios"
 import { useNavigate } from "react-router-dom"
+import LeafletMap from "../components/LeafletMap"
+import UserContext from "../contexts/UserContext.js"
+import { colors, font } from "../styles/Variables.js"
 
 
 const API_URL = process.env.REACT_APP_API_URL
@@ -16,7 +19,9 @@ export default function Home() {
   const [dataInicio, setDataInicio] = useState("")
   const [horaInicio, setHoraInicio] = useState("")
   const [horaFim, setHoraFim] = useState("")
-  const [dadosOnibus, setDadosOnibus] = useState(null)
+  const [dadosNotificacao, setDadosNotificacao] = useState(null)
+  const {user} = useContext(UserContext);
+  const [userPosition, setUserPosition] = useState([])
   const navigate = useNavigate()
 
   // Problema com fuso, precisei trocar a lógica.
@@ -61,7 +66,7 @@ export default function Home() {
     .then(geoResponse => {
       if (geoResponse.data && geoResponse.data.length > 0) {
         const { lat, lon } = geoResponse.data[0];
-        console.log(lat, lon);
+        setUserPosition([lat, lon])
         return axios.post(`${API_URL}/buses/notification`, 
           { 
             linha,
@@ -84,7 +89,9 @@ export default function Home() {
       }
     })
     .then(res => {
-        setDadosOnibus(res.data);
+        console.log("Notificação agendada com sucesso!");
+        setDadosNotificacao(res.data);
+        // Receber os dados da notificação
         console.log("Dados dos ônibus recebidos:", res.data);
     })
     .catch(err => {
@@ -97,9 +104,14 @@ export default function Home() {
     });
   }
 
+// # Fazer um get em notificações, ver as noti ativas e posições o usuário,
+//  e da linha e coloca-lás num select, pra poder mudar o mapa dinamico
+
+
+
   return (
-      <>
-        <Container>
+      <Container>
+        <MainContent>
           <Form onSubmit={buscaDadosOnibus}>
             <Input
               placeholder="Linha"
@@ -108,13 +120,13 @@ export default function Home() {
               required
             />
             <Input
-              placeholder="Ponto de partida (Ex.: Av. Rio Branco, 400)"
+              placeholder="Partida (Ex.: Av. Rio Branco, 400)"
               type="text"
               onChange={(e) => setPonto(e.target.value)}
               required
             />
             <ContainerData>
-              <Label htmlFor="data">Data</Label>
+              <Label htmlFor="data">Data do aviso</Label>
               <Input
                 id="data"
                 type="date"
@@ -124,7 +136,7 @@ export default function Home() {
               />
             </ContainerData>
             <ContainerInputTime className="div">
-              <ContainderHora>
+              <ContainerHora>
                 <Label htmlFor="hora-inicio">Hora de início</Label>
                 <Input
                   id="hora-inicio"
@@ -132,8 +144,8 @@ export default function Home() {
                   onChange={(e) => setHoraInicio(e.target.value)}
                   required
                 />
-              </ContainderHora>
-              <ContainderHora>
+              </ContainerHora>
+              <ContainerHora>
                 <Label htmlFor="hora-fim">Hora de fim</Label>
                 <Input
                   id="hora-fim"
@@ -141,38 +153,47 @@ export default function Home() {
                   onChange={(e) => setHoraFim(e.target.value)}
                   required
                 />
-              </ContainderHora>
+              </ContainerHora>
             </ContainerInputTime>
             <Button type="submit">Buscar Ônibus</Button>
           </Form>
-
-          {/* Aqui você vai renderizar a tabela e o mapa */}
-          {dadosOnibus && (
-            <div>
-              <h2>Resultados da Busca</h2>
-              {/* Exibir a tabela com os dados de 'dadosOnibus' */}
-              {/* Exibir o mapa com a posição dos ônibus */}
-            </div>
-          )}
-        </Container>
-      </>
+          {user ? (
+            <ContainerMap>
+              <LeafletMap linha={linha} dadosNotificacao={dadosNotificacao} posicao_usuario={userPosition}/>
+            </ContainerMap>
+          ): <div></div>}
+        </MainContent>
+      </Container>
   );
 }
 
 const Container = styled.div`
-  /* min-height: 100vh; */
+  min-height: calc(100vh - 100px); /* Garante que ocupe o espaço restante da tela */
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
   font-family: 'Roboto', sans-serif;
   background: #ffffffff;
+  background-color: ${colors.background}; 
+  `;
+const MainContent = styled.div`
+  width: 100%; 
+  display: flex;
+  flex-wrap: wrap; 
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+  /* width: 90%; */
+  padding: 0 50px;
+  /* max-width: 1000px;  */
+  /* background: #000; */
 `;
-
 const Form = styled.form`
-  width: 250px;
+  width: 320px;
   display: flex;
   flex-direction: column;
+  padding: 20px 0;
   gap: 15px
 `
 const ContainerData = styled.div`
@@ -185,34 +206,35 @@ const ContainerInputTime = styled.div`
   justify-content: space-between;
   gap: 5px;
 `
-const ContainderHora = styled.div`
+const ContainerHora = styled.div`
   display: flex;
   flex-direction: column;
   gap: 5px;
 `
 const Label = styled.label`
   font-size: 11px;
-  color: #495057;
-  /* margin-bottom: 5px; */
-  /* font-weight: bold; */
+  color: ${colors.black};
+  font-weight: bolder;
   font-style: italic;
+  font-size: ${font.label};
+  color: ${colors.label_black};
 `
-
 const Input = styled.input`
-    padding: 12px 15px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    font-size: 1rem;
-    transition: 0.3s;
-     &:focus {
-    border-color: #2874fc;
-    outline: none;
-    box-shadow: 0 0 5px rgba(40, 116, 252, 0.5);
-  }
+  padding: 12px 15px;
+  border: ${colors.input_border};
+  border-radius: 10px;
+  font-size: ${font.label};
+  transition: 0.3s;
+  min-width: 150px;
+    &:focus {
+  border-color: ${colors.primary};
+  outline: none;
+  box-shadow: ${colors.box_shadow};
+}
 `
 const Button = styled.button`
-    background: #2874fc;
-    color: white;
+    background: ${colors.primary};
+    color: ${colors.white};
     font-weight: 600;
     padding: 12px;
     border: none;
@@ -221,6 +243,13 @@ const Button = styled.button`
     cursor: pointer;
     transition: 0.3s;
     &:hover {
-      background: #1a5cd8;
+      background: ${colors.primary_hover};
     }
 `
+const ContainerMap = styled.div`
+  flex: 1 1 600px; 
+  height: 500px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: ${colors.box_shadow};
+`;

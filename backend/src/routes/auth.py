@@ -6,6 +6,7 @@ from ..security import get_password_hash, verify_password, create_access_token
 from ..schemas import UserRegistration, UserPublic, UserLogin, LoginResponse, Token
 from ..models import User
 from ..database import get_session
+from ..security import get_current_user
 
 router = APIRouter(
   prefix='/auth',
@@ -88,3 +89,8 @@ def login_for_access_token(
   access_token = create_access_token(data={'sub': user.email}) # sub / clain
 
   return {'access_token': access_token, 'token_type': 'Bearer', 'user': UserPublic(username=user.username, email=user.email)}
+
+
+@router.get("/validate",status_code=HTTPStatus.OK)
+def validate_token(current_user: User=Depends(get_current_user)): 
+  return

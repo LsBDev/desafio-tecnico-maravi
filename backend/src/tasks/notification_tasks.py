@@ -62,6 +62,7 @@ def check_and_send_notification(notification_id):
       notification.is_active = False
       session.add(notification)
       session.commit()
+      session.refresh(notification)
       session.close()
       return
 
@@ -104,6 +105,7 @@ def check_and_send_notification(notification_id):
           notification.is_active = False
           session.add(notification)
           session.commit()
+          session.refresh(notification)
           print(f"[{datetime.now()}] Notificação {notification.id} desativada após envio.")
           break
       else:

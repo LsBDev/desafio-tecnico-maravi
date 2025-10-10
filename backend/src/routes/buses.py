@@ -6,6 +6,8 @@ from ..security import get_current_user, get_session
 from ..models import User, NotificationConfig
 from sqlalchemy.orm import Session
 from ..schemas import NotificationCreate
+import redis
+import json
 
 
 router = APIRouter(
@@ -42,7 +44,40 @@ async def create_notification(
   session.refresh(notification)
 
   return {"Message": "Notificação agendada!"}
-  
+
+
+@router.get("/position", status_code=HTTPStatus.OK)
+async def get_bus_position(linha: str):
+
+  try:
+    r = redis.Redis(
+    host=settings.redis_host, 
+    port=settings.redis_port, 
+    db=0,
+    decode_responses=True
+    )
+
+    bus_data_raw = r.get("bus_data_current") #lista de todos os onibus
+    if not bus_data_raw:
+      print(f"Os Dados de ônibus não disponíveis no Redis.")
+      return
+    # quero buscar no redis as informações dos onibus filtrando pela linha
+    bus_data = json.loads(bus_data_raw)
+    #filtro pela linha
+    bus_filtered  = []
+    for bus in bus_data:
+      if(str(bus.get("linha") == linha)):
+        bus_filtered.append(bus)
+
+    return bus_filtered
+
+  except json.JSONDecodeError as err:
+    raise HTTPException(
+      status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+      detail=f"Erro ao decodificar dados do Redis: {err}"
+    )
+
+
 
 # Colocar aqui as regras que filtram os dados recebidos da APi do ônibus // Na verdade ver qual a melhor estrutura 
 # @router.get("/onibus-rj", status_code=HTTPStatus.OK)

@@ -4,13 +4,14 @@ import UserContext from "../../contexts/UserContext.js"
 import { useState, useContext } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import styled from "styled-components"
+import { colors } from "../../styles/Variables.js"
 
 export default function SignInPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const navigate = useNavigate()
   const {setToken} = useContext(AuthContext)
-  const {setUser} = useContext(UserContext);
+  const {user, setUser} = useContext(UserContext);
 
   function login(event) {
       event.preventDefault()
@@ -30,8 +31,10 @@ export default function SignInPage() {
         }
       )
       .then((res) => {
-        setToken("token:", res.data.access_token)
-        setUser("user", res.data.user.username)
+        // setToken("token:", res.data.access_token)
+        setToken(res.data.access_token)
+        setUser(res.data.user.username)
+        console.log(`O User é: ${user}`)
         localStorage.setItem("token", res.data.access_token)
         localStorage.setItem("user", res.data.user.username)
         console.log(res.data)
@@ -63,12 +66,13 @@ const Container = styled.div`
   justify-content: center;
   align-items: center;
   font-family: 'Roboto', sans-serif;
-  background: #ffffffff;
+  background: ${colors.white};
+  background-color: ${colors.background}; // Fundo branco (255, 255, 255) com 80% de opacidade
 `;
 const Card = styled.div`
-  background: #fff;
+  background: ${colors.white};
   padding: 40px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: ${colors.box_shadow};
   width: 100%;
   max-width: 380px;
   text-align: center;
@@ -80,18 +84,18 @@ const Form = styled.form`
 `
 const Input = styled.input`
     padding: 12px 15px;
-    border: 1px solid #ccc;
+    border: ${colors.input_border};
     border-radius: 10px;
     font-size: 1rem;
     transition: 0.3s;
      &:focus {
-    border-color: #2874fc;
+    border-color: ${colors.primary};
     outline: none;
     box-shadow: 0 0 5px rgba(40, 116, 252, 0.5);
   }
 `
 const Button = styled.button`
-    background: #2874fc;
+    background: ${colors.primary};
     color: white;
     font-weight: 600;
     padding: 12px;
