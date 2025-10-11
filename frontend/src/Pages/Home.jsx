@@ -4,12 +4,16 @@ import axios from "axios"
 import { useNavigate } from "react-router-dom"
 import LeafletMap from "../components/LeafletMap"
 import UserContext from "../contexts/UserContext.js"
+import AuthContext from "../contexts/AuthContext.js"
+import BusContext from "../contexts/BusContext.js"
 import { colors, font } from "../styles/Variables.js"
+import useQuickOut from "../hooks/useQuickout.jsx"
+import BusList from "../components/BusList.jsx"
 
 
 const API_URL = process.env.REACT_APP_API_URL
 
-// API de geocodificação
+// API de geocodificação => Jogar pro .env
 const NOMINATIM_API_URL = "https://nominatim.openstreetmap.org/search"
 
 export default function Home() {
@@ -21,23 +25,29 @@ export default function Home() {
   const [horaFim, setHoraFim] = useState("")
   const [dadosNotificacao, setDadosNotificacao] = useState(null)
   const {user} = useContext(UserContext);
+  const {token} = useContext(AuthContext)
+  const {busPosition} = useContext(BusContext);
   const [userPosition, setUserPosition] = useState([])
+  const [disabled, setDisabled] = useState(false);
   const navigate = useNavigate()
+
+  useQuickOut()
 
   // Problema com fuso, precisei trocar a lógica.
   useEffect(() => {
     const hoje = new Date();
     const ano = hoje.getFullYear();
     const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-    const dia = String(hoje.getDate()).padStart(2, '0');
-    
+    const dia = String(hoje.getDate()).padStart(2, '0');    
     const formattedDate = `${ano}-${mes}-${dia}`;
     setDataInicio(formattedDate);
   }, []);
 
+ 
+  //=============================
   function buscaDadosOnibus(event) {
     event.preventDefault()
-
+    setDisabled(true)
     if (horaInicio && horaFim) {
       const [hI, mI] = horaInicio.split(":").map(Number)
       const [hF, mF] = horaFim.split(":").map(Number)
@@ -50,18 +60,17 @@ export default function Home() {
       }
     }
 
-    const token = localStorage.getItem("token")
-    if(!token) {
+    if(!token || !user) {
       alert("Sua sessão expirou. Faça login novamente")
       navigate("/")
     }
     // API de geocodificação Nominatim
     axios.get(NOMINATIM_API_URL, {
-        params: {
-          q: `${ponto}, Rio de Janeiro`,
-          format: "json",
-          limit: 1,
-        },
+      params: {
+        q: `${ponto}, Rio de Janeiro`,
+        format: "json",
+        limit: 1,
+      },
     })
     .then(geoResponse => {
       if (geoResponse.data && geoResponse.data.length > 0) {
@@ -83,87 +92,79 @@ export default function Home() {
           }
         );
       } else {
-        // Se não encontrar o ponto, lança um erro, volta uma camada, para ir para o catch mais próximo.
-        // posso colocar um middleware de erro depois
         throw new Error("Ponto não encontrado.");
       }
     })
     .then(res => {
-        console.log("Notificação agendada com sucesso!");
-        setDadosNotificacao(res.data);
-        // Receber os dados da notificação
-        console.log("Dados dos ônibus recebidos:", res.data);
+      console.log("Notificação agendada com sucesso!");
+      console.log("Notificação dados", res.data);
+      setDadosNotificacao(res.data);
+      console.log(`Dados que vem do back assim que agenda: ${dadosNotificacao}`)
+      setDisabled(false)
     })
     .catch(err => {
+      if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+        alert("Sua sessão expirou. Faça login novamente.");
+        localStorage.removeItem("token");
+        localStorage.removeItem('user');
+        window.location.reload();
+        return; // sai da função pra não continuar o fluxo
+      }
       console.error("Erro na busca de dados:", err.response);
       if (err.message === "Ponto não encontrado.") {
-          alert("Não foi possível encontrar as coordenadas para o ponto informado. Tente um endereço mais preciso.");
+        alert("Não foi possível encontrar as coordenadas para o ponto informado. Tente um endereço mais preciso.");
       } else {
-          alert("Ocorreu um erro ao buscar as informações. Por favor, tente novamente mais tarde.");
+        alert("Ocorreu um erro ao buscar as informações. Por favor, tente novamente mais tarde.");
       }
+      setDisabled(false)
     });
   }
+// =======================    
+  
 
 // # Fazer um get em notificações, ver as noti ativas e posições o usuário,
 //  e da linha e coloca-lás num select, pra poder mudar o mapa dinamico
 
-
-
   return (
-      <Container>
-        <MainContent>
-          <Form onSubmit={buscaDadosOnibus}>
+    <Container>
+      <MainContent>
+        <Form onSubmit={buscaDadosOnibus}>
+          <Input placeholder="Linha" type="text" disabled={disabled} onChange={(e) => setLinha(e.target.value)} required/>
+          <Input
+            placeholder="Partida (Ex.: Av. Rio Branco, 400)"
+            type="text" disabled={disabled}  onChange={(e) => setPonto(e.target.value)}
+            required
+          />
+          <ContainerData>
+            <Label htmlFor="data">Data do aviso</Label>
             <Input
-              placeholder="Linha"
-              type="text"
-              onChange={(e) => setLinha(e.target.value)}
-              required
-            />
-            <Input
-              placeholder="Partida (Ex.: Av. Rio Branco, 400)"
-              type="text"
-              onChange={(e) => setPonto(e.target.value)}
-              required
-            />
-            <ContainerData>
-              <Label htmlFor="data">Data do aviso</Label>
+              id="data"
+              type="date" disabled={disabled}  min={dataInicio}  onChange={(e) => setDataNotificacao(e.target.value)} required/>
+          </ContainerData>
+          <ContainerInputTime className="div">
+            <ContainerHora>
+              <Label htmlFor="hora-inicio">Hora de início</Label>
               <Input
-                id="data"
-                type="date"
-                min={dataInicio}
-                onChange={(e) => setDataNotificacao(e.target.value)}
-                required
-              />
-            </ContainerData>
-            <ContainerInputTime className="div">
-              <ContainerHora>
-                <Label htmlFor="hora-inicio">Hora de início</Label>
-                <Input
-                  id="hora-inicio"
-                  type="time"
-                  onChange={(e) => setHoraInicio(e.target.value)}
-                  required
-                />
-              </ContainerHora>
-              <ContainerHora>
-                <Label htmlFor="hora-fim">Hora de fim</Label>
-                <Input
-                  id="hora-fim"
-                  type="time"
-                  onChange={(e) => setHoraFim(e.target.value)}
-                  required
-                />
-              </ContainerHora>
-            </ContainerInputTime>
-            <Button type="submit">Buscar Ônibus</Button>
-          </Form>
-          {user ? (
-            <ContainerMap>
-              <LeafletMap linha={linha} dadosNotificacao={dadosNotificacao} posicao_usuario={userPosition}/>
-            </ContainerMap>
-          ): <div></div>}
-        </MainContent>
-      </Container>
+                id="hora-inicio" type="time" disabled={disabled} onChange={(e) => setHoraInicio(e.target.value)} required/>
+            </ContainerHora>
+            <ContainerHora>
+              <Label htmlFor="hora-fim">Hora de fim</Label>
+              <Input  id="hora-fim" type="time" disabled={disabled} onChange={(e) => setHoraFim(e.target.value)} required/>
+            </ContainerHora>
+          </ContainerInputTime>
+          <Button type="submit">Agendar Aviso</Button>
+        </Form>
+        {dadosNotificacao ? (
+          <ContainerMap>
+            <LeafletMap linha_onibus={linha} posicao_onibus={busPosition} posicao_usuario={userPosition}/>
+          </ContainerMap>
+        ): <div></div>}
+      </MainContent>
+      {dadosNotificacao ? (
+        <BusList buses={busPosition} linha_onibus={linha}/>
+      ): <div></div>}     
+
+    </Container>
   );
 }
 
@@ -173,9 +174,10 @@ const Container = styled.div`
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  font-family: 'Roboto', sans-serif;
-  background: #ffffffff;
+  font-family: ${font.font_family};
+  background: ${colors.white};
   background-color: ${colors.background}; 
+  padding: 30px;
   `;
 const MainContent = styled.div`
   width: 100%; 
@@ -184,10 +186,6 @@ const MainContent = styled.div`
   justify-content: center;
   align-items: center;
   gap: 30px;
-  /* width: 90%; */
-  padding: 0 50px;
-  /* max-width: 1000px;  */
-  /* background: #000; */
 `;
 const Form = styled.form`
   width: 320px;
@@ -233,23 +231,26 @@ const Input = styled.input`
 }
 `
 const Button = styled.button`
-    background: ${colors.primary};
-    color: ${colors.white};
-    font-weight: 600;
-    padding: 12px;
-    border: none;
-    border-radius: 10px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: 0.3s;
-    &:hover {
-      background: ${colors.primary_hover};
-    }
+  background: ${colors.primary};
+  color: ${colors.white};
+  font-weight: 600;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-family: ${font.font_family};
+  cursor: pointer;
+  transition: 0.3s;
+  &:hover {
+    background: ${colors.primary_hover};
+  }
 `
 const ContainerMap = styled.div`
   flex: 1 1 600px; 
+  /* display: flex; */
   height: 500px;
   border-radius: 10px;
   overflow: hidden;
   box-shadow: ${colors.box_shadow};
-`;
+  /* background: #000; */
+`

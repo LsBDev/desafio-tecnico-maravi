@@ -1,6 +1,5 @@
 import styled from "styled-components"
 import {BrowserRouter, Routes, Route} from "react-router-dom"
-import AuthRoute from "./components/AuthRoute.jsx"
 import Home from "./Pages/Home.jsx"
 import SignInPage from "./Pages/SignIn/SingInPage.jsx"
 import SignUpPage from "./Pages/SignUp/SignUpPage.jsx"
@@ -9,67 +8,46 @@ import UserContext from "./contexts/UserContext.js"
 import { useState } from "react"
 import 'leaflet/dist/leaflet.css';
 import { colors } from "./styles/Variables.js"
-// import Logo from "../src/assets/Logo em svg.svg"
 import Logo from "../src/assets/Logo.png"
+import BusContext from "./contexts/BusContext.js"
 
 export default function App() {
-    const [token, setToken] = useState(localStorage.getItem("token"))
-    const [user, setUser] = useState(localStorage.getItem("user"))
+  const [token, setToken] = useState(localStorage.getItem("token"))
+  const [user, setUser] = useState(localStorage.getItem("user"))
+  const [busPosition, setBusPosition] = useState([])
 
   return (
     <AuthContext.Provider value={{token, setToken}}> 
       <UserContext.Provider value={{user, setUser}}>
-        <div>
-          <BrowserRouter>
-            <HearderContainer>
-              <TopRow>
-                <LeftSection>
-                  <Img src={Logo} alt="Logo Avisa Aí"/>
-                </LeftSection>
-                <RightSection>
-                  {user ? <Title>Olá, {user}!</Title> : ""}
-                </RightSection>
-              </TopRow>
-              <BottomRow>
-                <nav>Menu de Navegação Aqui</nav>
-              </BottomRow>
-              {/* <LeftSection>
-                <Img src={Logo}/>
-              </LeftSection>
-              <RightSection>
-                {user? <Title>Olá, {user}!</Title>: "" } 
-              </RightSection>
-              {/* <Title> */}
-                {/* <p>Menu</p>    */}
-                {/* </Title> */ }
-            </HearderContainer>
-            <Routes>
-              <Route path="/" element={<SignInPage/>}/>
-              <Route path="/signup" element={<SignUpPage/>}/>
-                <Route path="/home" element={
-                  <AuthRoute>
-                    <Home/>
-                  </AuthRoute>
-                  }/>
-            </Routes>
-          </BrowserRouter>    
-        </div>
+        <BusContext.Provider value={{busPosition, setBusPosition}}>
+          <div>
+            <BrowserRouter>
+              <HearderContainer>
+                <TopRow>
+                  <LeftSection>
+                    <Img src={Logo} alt="Logo Avisa Aí"/>
+                  </LeftSection>
+                  <RightSection>
+                    {user ? <Title>Olá, {user}!</Title> : ""}
+                  </RightSection>
+                </TopRow>
+                <BottomRow>
+                  {/* <nav>Menu de Navegação Aqui</nav> */}
+                </BottomRow>
+              </HearderContainer>
+              <Routes>
+                <Route path="/" element={<SignInPage/>}/>
+                <Route path="/signup" element={<SignUpPage/>}/>
+                <Route path="/home" element={<Home/>}/>
+              </Routes>
+            </BrowserRouter>    
+          </div>
+        </BusContext.Provider>
       </UserContext.Provider>
     </AuthContext.Provider>
   );
 }
 
-// const HearderContainer = styled.header`
-// display: flex;
-//   background: ${colors.blue_header};
-//   justify-content: space-between;
-//   align-items: center;
-//   box-shadow: ${colors.box_shadow};
-//   position: sticky;
-//   top: 0;
-//   z-index: 1000;
-//   padding: 0px 50px;
-// `
 const HearderContainer = styled.header`
   display: flex;
   flex-direction: column; /* Organiza os filhos (TopRow e BottomRow) verticalmente */
@@ -78,10 +56,9 @@ const HearderContainer = styled.header`
   position: sticky;
   top: 0;
   z-index: 1000;
-  padding: 20px 30px;
+  padding: 8px 30px;
 `;
 
-// Container que agrupa Logo (Esquerda) e Usuário (Direita)
 const TopRow = styled.div`
   display: flex;
   justify-content: space-between; /* Empurra Logo e Usuário para os cantos */
@@ -91,19 +68,16 @@ const TopRow = styled.div`
   gap: 30px;
 `;
 
-// Seção Esquerda (Logo)
 const LeftSection = styled.div`
   display: flex;
   align-items: center;
 `;
 
-// Seção Direita (Nome do Usuário)
 const RightSection = styled.div`
   display: flex;
   align-items: center;
 `;
 
-// Linha de baixo (Menu)
 const BottomRow = styled.div`
   display: flex;
   justify-content: center; /* Centraliza o menu horizontalmente */

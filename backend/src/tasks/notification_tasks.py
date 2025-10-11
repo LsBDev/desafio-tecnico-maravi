@@ -43,7 +43,7 @@ def check_and_send_notification(notification_id):
     hora_atual = datetime.now().time()
     hoje = datetime.now().date()
     
-    # Certifique-se de que a notificação está ativa e a data é a de hoje
+    # Certifique-se de que a notificação está ativa e a data é a de hoje -> guard
     if not notification.is_active or notification.notification_date != hoje:
       session.close()
       return
@@ -53,7 +53,6 @@ def check_and_send_notification(notification_id):
 
     if not isinstance(start_time_db, time):
         start_time_db = datetime.strptime(str(start_time_db), '%H:%M:%S').time()
-
     if not isinstance(end_time_db, time):
         end_time_db = datetime.strptime(str(end_time_db), '%H:%M:%S').time()
 
@@ -71,7 +70,7 @@ def check_and_send_notification(notification_id):
       print(f"[{datetime.now()}] Dados de ônibus não disponíveis no Redis.")
       session.close()
       return
-    print("linha 69 - Le os dados do redis - notification_tasks")
+    print("Le os dados do redis - notification_tasks")
     try:
       bus_data = json.loads(bus_data_raw)
     except json.JSONDecodeError as e:
@@ -79,12 +78,38 @@ def check_and_send_notification(notification_id):
       session.close()
       return
 
+#=============================================================
+    # Inicializa um dicionário vazio para armazenar os ônibus, usando a ordem como chave
+    onibus_da_linha_dict = {}
     onibus_da_linha = []
-    for bus in bus_data:
-      if str(bus.get('linha')) == notification.line_code:
-        onibus_da_linha.append(bus)
 
+    
+    for bus in bus_data:
+      # Verifica se a linha do ônibus corresponde à linha que você quer
+      if str(bus.get('linha')) == notification.line_code:
+
+#========================================
+        ordem_do_onibus = bus.get('ordem')        
+        # Converte o timestamp para um número inteiro para comparação
+        datahora_atual = int(bus.get('datahora'))
+        if ordem_do_onibus in onibus_da_linha_dict:
+          # Pega o ônibus que já está no dicionário
+          onibus_existente = onibus_da_linha_dict[ordem_do_onibus]
+          # Converte o timestamp do ônibus existente para comparação
+          datahora_existente = int(onibus_existente.get('datahora'))            
+          # Se a data/hora atual for mais recente, substitui o ônibus no dicionário
+          if datahora_atual > datahora_existente:
+            onibus_da_linha_dict[ordem_do_onibus] = bus
+        else:
+          # Se não existe, adiciona o ônibus ao dicionário
+          onibus_da_linha_dict[ordem_do_onibus] = bus
+# Agora, converte os valores do dicionário de volta para uma lista
+    onibus_da_linha = list(onibus_da_linha_dict.values())
+
+
+#=========================================
     print("Terminou de preencher o array de onibus - notification_tasks")
+    print(f"quantos onibus tem no array de onibus da linha:{len(onibus_da_linha)}") # LINHA QUE ME FEZ DESCOBRIR O ERRO
     for onibus in onibus_da_linha:
 
       latitude_str = onibus.get('latitude').replace(',', '.')
@@ -107,7 +132,7 @@ def check_and_send_notification(notification_id):
           session.commit()
           session.refresh(notification)
           print(f"[{datetime.now()}] Notificação {notification.id} desativada após envio.")
-          break
+          break # sai do loop, achei um onibus, não preciso dos demais da linha
       else:
         print(f"Sem notificação! Tempo de chegada {tempo_em_minutos:.0f}")
   except Exception as exc:

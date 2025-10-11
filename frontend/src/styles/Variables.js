@@ -7,10 +7,11 @@ export const colors = {
   primary_hover: '#1a5cd8',
   secondary: '#50E3C2',
   input_border: '1px solid #ccc',
-  background: 'rgba(255, 255, 255, 0.5)', // Fundo para um contêiner mais opaco
+  background: 'rgba(255, 255, 255, 0.4)', // Fundo para um contêiner mais opaco
   box_shadow: '0 4px 6px rgba(0, 0, 0, 0.)', // Sombra de caixa
 };
 export const font = {
   label: '0.9rem',
   button_size: '1.2rem',
+  font_family: "'Roboto', sans-serif",
 }

@@ -12,80 +12,58 @@ router = APIRouter(
   prefix='/auth',
   tags=['auth']
 )
-#Criar token de autorizaćao
-# cadastro de usuários
+
 @router.post("/sign-up", status_code=HTTPStatus.CREATED, response_model=UserPublic)
 def create_user(user: UserRegistration, session=Depends(get_session)):
-    # Fazer a criação do usuário no banco
-    user_db = session.scalar(
-        select(User).where(
-            (User.username == user.username) | (User.email == user.email)
-        )
+  # Verificar existência e Fazer a criação do usuário no banco
+  user_exist = session.scalar(
+    select(User).where(
+      (User.username == user.username) | (User.email == user.email)
     )
-    if user_db:
-        if user_db.username == user.username:
-            raise HTTPException(
-                status_code=HTTPStatus.BAD_REQUEST,
-                detail="Usuário já existe"
-            )
-        elif user_db.email == user.email:
-            raise HTTPException(
-                status_code=HTTPStatus.BAD_REQUEST,
-                detail="Email já existe"
-            )
-        # Guardar um token ao invés da senha, criptografar a senha
-    hash = get_password_hash(user.password)
-    user_db = User(
-        username=user.username, email=user.email, password=hash
-    )
+  )
+  if user_exist:
+    if user_exist.username == user.username:
+      raise HTTPException(
+        status_code=HTTPStatus.BAD_REQUEST,
+        detail="Usuário já existe."
+      )
+    elif user_exist.email == user.email:
+      raise HTTPException(
+        status_code=HTTPStatus.BAD_REQUEST,
+        detail="Email já existe."
+      )
+  # Guardar um hash ao invés da senha, criptografar a senha
+  hash = get_password_hash(user.password)
+  # Guarda no banco
+  try: 
+    user_db = User(username=user.username, email=user.email, password=hash)
     session.add(user_db)
     session.commit()
     session.refresh(user_db)
-            
-    return user_db
-
-# # login
-# @router.post("/sign-in", status_code=HTTPStatus.OK, response_model=LoginResponse)
-# def sign_in_user(user: UserLogin, session=Depends(get_session)):
-#   # Fazer um get no banco e devolver nome e email -> Usar o schema UserPublic  
-#   user_db = session.scalar(
-#     select(User).where(
-#       User.email == user.email
-#     )
-#   )
-#   if not user_db:
-#     raise HTTPException(
-#       status_code=HTTPStatus.BAD_REQUEST,
-#       detail="Dados incorretos"
-#     )
-#   # validar senha -> criptografia
-#   if not verify_password(user.password, user_db.password):
-#     raise HTTPException(
-#       status_code=HTTPStatus.UNAUTHORIZED,
-#       detail="Dados incorretos"
-#     )
-  
-#   token = create_access_token()
-  
-#   return {
-#     "access_token": token,
-#     "token_type": "Bearer",
-#     "user": UserPublic(username=user_db.username, email=user_db.email)
-#   }
+  except Exception as err:
+    session.rollback()
+    raise HTTPException(
+      status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+      detail="Erro ao criar usuário."
+    )
+          
+  return user_db
 
 
-@router.post("/token", response_model=LoginResponse)
+@router.post("/token", status_code=HTTPStatus.OK, response_model=LoginResponse)
 def login_for_access_token(
   form_data: OAuth2PasswordRequestForm = Depends(), 
   session=Depends(get_session)
 ):
+  # Verifica existência de conta
   user = session.scalar(
     select(User).where(User.email == form_data.username)
   )
   if not user or not verify_password(form_data.password, user.password):
     raise HTTPException(
-      status_code=HTTPStatus.UNAUTHORIZED, detail='Incorrect email or password'
+      status_code=HTTPStatus.UNAUTHORIZED, detail='Credenciais incorretas.'
     )
+  # Cria Token de acesso
   access_token = create_access_token(data={'sub': user.email}) # sub / clain
 
   return {'access_token': access_token, 'token_type': 'Bearer', 'user': UserPublic(username=user.username, email=user.email)}
@@ -93,4 +71,11 @@ def login_for_access_token(
 
 @router.get("/validate",status_code=HTTPStatus.OK)
 def validate_token(current_user: User=Depends(get_current_user)): 
-  return
+  return {
+    "status": "Usuário autenticado.",
+    "user": {
+      "id": current_user.id,
+      "username": current_user.username,
+      "email": current_user.email
+    }
+  }
