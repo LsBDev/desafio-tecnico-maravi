@@ -32,6 +32,40 @@ export default function Home() {
   const [disabled, setDisabled] = useState(false);
   const navigate = useNavigate()
 
+  //=============================
+  const [linhasMunicipais, setLinhasMunicipais] = useState([]); // Armazena a lista de linhas
+  const [linhaSelecionada, setLinhaSelecionada] = useState(""); // Armazena a linha selecionada
+  const [trajeto, setTrajeto] = useState(""); // Armazena o trajeto da linha
+
+   useEffect(() => {
+    axios.get(`${API_URL}/buses/municipal_lines`)
+      .then(res => {
+        const linhasOrdenadas = res.data.sort((a, b) => {
+        return a.numero.localeCompare(b.numero, undefined, { numeric: true, sensitivity: 'base' });
+      });
+        console.log(res.data)
+        setLinhasMunicipais(linhasOrdenadas);
+      })
+      .catch(err => {
+        console.error("Erro ao carregar linhas municipais:", err);
+        toast.error("Não foi possível carregar a lista de linhas municipais.");
+      });
+  }, []); // O array de dependências vazio garante que o useEffect rode apenas uma vez
+
+  // Lógica para filtrar e exibir a rota da linha
+  useEffect(() => {
+    if (linhaSelecionada) {
+      const linhaFiltrada = linhasMunicipais.find(item => item.numero === linhaSelecionada);
+      if (linhaFiltrada) {
+        setTrajeto(linhaFiltrada.nome);
+        setLinha(linhaFiltrada.numero); // Garante que a variável 'linha' seja atualizada
+      }
+    } else {
+      setTrajeto("");
+    }
+  }, [linhaSelecionada, linhasMunicipais]); // Atualiza o trajeto quando a linha selecionada muda
+//================================
+
   useQuickOut()
 
   // Problema com fuso, precisei trocar a lógica.
@@ -44,22 +78,10 @@ export default function Home() {
     setDataInicio(formattedDate);
   }, []);
 
- 
-  //=============================
+
   function buscaDadosOnibus(event) {
     event.preventDefault()
     setDisabled(true)
-    // if (horaInicio && horaFim) {
-    //   const [hI, mI] = horaInicio.split(":").map(Number)
-    //   const [hF, mF] = horaFim.split(":").map(Number)
-
-    //   const totalMinutosInicio = hI*60 + mI
-    //   const totalMinutosFim = hF*60 + mF
-    //   if ((totalMinutosFim - totalMinutosInicio) <= 0 || (totalMinutosFim - totalMinutosInicio) > 60) {
-    //     alert("O intervalo de horário deve ser de no máximo 1 hora.")
-    //     return
-    //   }
-    // }
     //===================================
     if (horaInicio && horaFim) {
         const [hI, mI] = horaInicio.split(":").map(Number)
@@ -82,9 +104,7 @@ export default function Home() {
             setDisabled(false); // Reativa o botão se a validação falhar
             return;
         }
-        // --- FIM DA NOVA LÓGICA DE VALIDAÇÃO ---
     }
-
     //===================================
 
     if(!token || !user) {
@@ -154,7 +174,39 @@ export default function Home() {
     <Container>
       <MainContent>
         <Form onSubmit={buscaDadosOnibus}>
-          <Input placeholder="Linha" type="text" disabled={disabled} onChange={(e) => setLinha(e.target.value)} required/>
+
+
+          <FormLineContainer> {/* NOVO: Container para agrupar os campos de linha e select */}
+            <SelectWrapper> {/* NOVO: Wrapper para o select */}
+              <Label htmlFor="linha-select">Linha do ônibus</Label>
+              <Select id="linha-select" disabled={disabled} onChange={(e) => {
+                setLinhaSelecionada(e.target.value);
+                setLinha(e.target.value); // Garante que a variável 'linha' seja a selecionada
+              }} required={!linha}>
+                <option value="">Linha</option>
+                {linhasMunicipais.map(item => (
+                  <option key={item.numero} value={item.numero}>{item.numero}</option>
+                ))}
+              </Select>
+            </SelectWrapper>
+            <LineOr> </LineOr> {/* NOVO: Texto "OU" */}
+            <Input 
+              placeholder="Linha digitada" 
+              type="text" 
+              disabled={disabled || linhaSelecionada} // Desabilita se um select foi escolhido
+              onChange={(e) => {
+                setLinha(e.target.value);
+                setLinhaSelecionada(""); // Limpa o select se o usuário digitar
+              }} 
+              required={!linhaSelecionada}
+            />
+          </FormLineContainer>
+
+
+
+
+          <Input value={trajeto} placeholder="Trajeto da Linha" readOnly disabled={true} style={{ fontWeight: 'bold' }}/> 
+          {/* <Input placeholder="Linha" type="text" disabled={disabled} onChange={(e) => setLinha(e.target.value)} required/> */}
           <Input
             placeholder="Partida (Ex.: Av. Rio Branco, 400)"
             type="text" disabled={disabled}  onChange={(e) => setPonto(e.target.value)}
@@ -219,6 +271,43 @@ const Form = styled.form`
   padding: 20px 0;
   gap: 15px
 `
+
+const SelectWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+`;
+
+const Select = styled.select`
+  width: 100%;
+  padding: 11px 13px;
+  border: ${colors.input_border};
+  border-radius: 10px;
+  font-size: ${font.label};
+  min-width: 150px;
+  transition: 0.3s;
+  &:focus {
+    border-color: ${colors.primary};
+    outline: none;
+    box-shadow: ${colors.box_shadow};
+  }
+`;
+
+const FormLineContainer = styled.div`
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  margin-bottom: 5px;
+`;
+
+const LineOr = styled.span`
+  font-size: 14px;
+  color: ${colors.darkGray};
+  margin-bottom: 12px;
+`;
+
+
 const ContainerData = styled.div`
   display: flex;
   flex-direction: column;

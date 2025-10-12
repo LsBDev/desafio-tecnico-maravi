@@ -1,0 +1,670 @@
+[
+  {
+    "numero": "202",
+    "nome": "Rio Comprido - Praça XV"
+  },
+  {
+    "numero": "401",
+    "nome": "Rio Comprido - São Salvador"
+  },
+  {
+    "numero": "411",
+    "nome": "Usina - Prado Júnior"
+  },
+  {
+    "numero": "413",
+    "nome": "Muda Jardim de Alah (via Aterro do Flamengo)"
+  },
+  {
+    "numero": "415",
+    "nome": "Usina - Leblon"
+  },
+  {
+    "numero": "364",
+    "nome": "Jardim Bangu - Tiradentes"
+  },
+  {
+    "numero": "365",
+    "nome": "Mendanha - Tiradentes"
+  },
+  {
+    "numero": "367",
+    "nome": "Realengo - Praça XV (via Av. Brasil)"
+  },
+  {
+    "numero": "379",
+    "nome": "Catiri - Tiradentes"
+  },
+  {
+    "numero": "383",
+    "nome": "Jardim Novo (Realengo) Tiradentes"
+  },
+  {
+    "numero": "389",
+    "nome": "Vila Aliança - Carioca"
+  },
+  {
+    "numero": "394",
+    "nome": "Vila Kennedy - Tiradentes"
+  },
+  {
+    "numero": "395",
+    "nome": "Coqueiros - Tiradentes"
+  },
+  {
+    "numero": "2332",
+    "nome": "Campo Grande - Castelo (via Av. Santa Cruz)"
+  },
+  {
+    "numero": "2381",
+    "nome": "Pedra de Guaratiba - Castelo"
+  },
+  {
+    "numero": "220",
+    "nome": "Usina - Candelária (via Haddock Lobo)"
+  },
+  {
+    "numero": "226",
+    "nome": "Grajaú - Carioca"
+  },
+  {
+    "numero": "345",
+    "nome": "Barra da Tijuca - Candelária (via Furnas)"
+  },
+  {
+    "numero": "405",
+    "nome": "Ramos - Cosme Velho"
+  },
+  {
+    "numero": "480",
+    "nome": "Olaria Prado Júnior"
+  },
+  {
+    "numero": "483",
+    "nome": "Penha - Copacabana"
+  },
+  {
+    "numero": "484",
+    "nome": "Olaria - Copacabana (via Aterro do Flamengo)"
+  },
+  {
+    "numero": "497",
+    "nome": "Penha - Cosme Velho"
+  },
+  {
+    "numero": "498",
+    "nome": "Circular da Penha - Cosme Velho"
+  },
+  {
+    "numero": "2346",
+    "nome": "Vila Valqueire - Castelo (via Marechal Hermes)"
+  },
+  {
+    "numero": "210",
+    "nome": "Caju - Praça XV"
+  },
+  {
+    "numero": "472",
+    "nome": "Triagem - Leme (via Praça XV)"
+  },
+  {
+    "numero": "474",
+    "nome": "Jacaré - Jardim de Alah"
+  },
+  {
+    "numero": "475",
+    "nome": "Méier - Prado Júnior"
+  },
+  {
+    "numero": "388",
+    "nome": "Santa Cruz - Carioca (via Av. Brasil)"
+  },
+  {
+    "numero": "2303",
+    "nome": "Cesarão - Carioca"
+  },
+  {
+    "numero": "2304",
+    "nome": "Sepetiba - Carioca (via Padre G. Decaminada)"
+  },
+  {
+    "numero": "2307",
+    "nome": "Jardim 7 de Abril - Castelo (via Av. Pres. Vargas)"
+  },
+  {
+    "numero": "2308",
+    "nome": "Cosmos Carioca"
+  },
+  {
+    "numero": "2309",
+    "nome": "Urucânia - Carioca"
+  },
+  {
+    "numero": "2331",
+    "nome": "Santa Cruz - Castelo (via Sepetiba)"
+  },
+  {
+    "numero": "130",
+    "nome": "Praça XV - Leblon (via Aterro do Flamengo)"
+  },
+  {
+    "numero": "158",
+    "nome": "Central - Gávea"
+  },
+  {
+    "numero": "176",
+    "nome": "São Conrado - Central"
+  },
+  {
+    "numero": "321",
+    "nome": "Bancários - Castelo (via Linha Vermelha)"
+  },
+  {
+    "numero": "324",
+    "nome": "Ribeira - Castelo"
+  },
+  {
+    "numero": "325",
+    "nome": "Ribeira - Castelo (via Linha Vermelha)"
+  },
+  {
+    "numero": "326",
+    "nome": "Bancários - Castelo"
+  },
+  {
+    "numero": "329",
+    "nome": "Bancários - Castelo (via Praia da Rosa)"
+  },
+  {
+    "numero": "330",
+    "nome": "Parque União - Castelo"
+  },
+  {
+    "numero": "360",
+    "nome": "Recreio dos Bandeirantes - Carioca"
+  },
+  {
+    "numero": "361",
+    "nome": "Recreio dos Bandeirantes - Carioca (via Linha Amarela)"
+  },
+  {
+    "numero": "366",
+    "nome": "Campo Grande - Tiradentes"
+  },
+  {
+    "numero": "382",
+    "nome": "Piabas Carioca (via Estrada Benvindo de Novaes)"
+  },
+  {
+    "numero": "398",
+    "nome": "Campo Grande - Tiradentes (via Vila Kennedy)"
+  },
+  {
+    "numero": "2336",
+    "nome": "Campo Grande - Castelo (via Av. Brasil)"
+  },
+  {
+    "numero": "2339",
+    "nome": "Castelo - Estrada da Posse"
+  },
+  {
+    "numero": "107",
+    "nome": "Urca Central"
+  },
+  {
+    "numero": "177",
+    "nome": "São Conrado - Candelária"
+  },
+  {
+    "numero": "335",
+    "nome": "Brás de Pina - Tiradentes"
+  },
+  {
+    "numero": "337",
+    "nome": "Curicica - Praça XV (via Linha Amarela)"
+  },
+  {
+    "numero": "340",
+    "nome": "Curicica - Praça XV (via Cidade de Deus/Av. Menezes Cortes)"
+  },
+  {
+    "numero": "380",
+    "nome": "Curicica Praça XV (via Linha Amarela/Estrada do Pau Ferro)"
+  },
+  {
+    "numero": "390",
+    "nome": "Curicica - Praça XV (via Guerengue)"
+  },
+  {
+    "numero": "2018",
+    "nome": "Aeroporto Internacional do Rio de Janeiro - Alvorada"
+  },
+  {
+    "numero": "2145",
+    "nome": "A.I.R.J. - Aeroporto Santos Dumont"
+  },
+  {
+    "numero": "120",
+    "nome": "Central - Prado Júnior"
+  },
+  {
+    "numero": "121",
+    "nome": "Central - Copacabana"
+  },
+  {
+    "numero": "123",
+    "nome": "Jardim de Alah - Candelária"
+  },
+  {
+    "numero": "127",
+    "nome": "Rodoviária - Copacabana"
+  },
+  {
+    "numero": "128",
+    "nome": "Gávea - Rodoviária (via Copacabana)"
+  },
+  {
+    "numero": "132",
+    "nome": "Central - Leblon (via Aterro do Flamengo)"
+  },
+  {
+    "numero": "170",
+    "nome": "Rodoviária - Gávea"
+  },
+  {
+    "numero": "172",
+    "nome": "Rodoviária - Leblon (via Jóquei)"
+  },
+  {
+    "numero": "190",
+    "nome": "Rodoviária - Leme"
+  },
+  {
+    "numero": "309",
+    "nome": "Alvorada - Central (via Botafogo/Av. Lúcio Costa)"
+  },
+  {
+    "numero": "316",
+    "nome": "Recreio dos Bandeirantes - Central (via Botafogo/Av. Lúcio Costa)"
+  },
+  {
+    "numero": "318",
+    "nome": "Barra Sul - Castelo"
+  },
+  {
+    "numero": "442",
+    "nome": "Maré - Copacabana (via Praça Mauá)"
+  },
+  {
+    "numero": "443",
+    "nome": "Maré - Leblon (via Central)"
+  },
+  {
+    "numero": "957",
+    "nome": "Maré - Alvorada (via Botafogo/Av. Lúcio Costa)"
+  },
+  {
+    "numero": "358",
+    "nome": "Cosmos Carioca"
+  },
+  {
+    "numero": "232",
+    "nome": "Lins - Praça XV (via Rua Aquidabā)"
+  },
+  {
+    "numero": "SPB232",
+    "nome": "Lins - Praça XV"
+  },
+  {
+    "numero": "SV232",
+    "nome": "Lins - Praça XV (via Rua Aquidabā)"
+  },
+  {
+    "numero": "249",
+    "nome": "Água Santa - Carioca"
+  },
+  {
+    "numero": "2251",
+    "nome": "Engenho de Dentro - Castelo"
+  },
+  {
+    "numero": "363",
+    "nome": "Vila Valqueire - Praça XV"
+  },
+  {
+    "numero": "308",
+    "nome": "Barra da Tijuca - Central (via Copacabana/Av. das Américas)"
+  },
+  {
+    "numero": "314",
+    "nome": "Recreio dos Bandeirantes - Central (via Copacabana/Av. das Américas)"
+  },
+  {
+    "numero": "292",
+    "nome": "Engenho da Rainha - Praça XV"
+  },
+  {
+    "numero": "310",
+    "nome": "Engenho da Rainha - Praça XV"
+  },
+  {
+    "numero": "311",
+    "nome": "Engenheiro Leal - Praça XV (via Cavalcanti)"
+  },
+  {
+    "numero": "372",
+    "nome": "Pavuna - Passeio"
+  },
+  {
+    "numero": "373",
+    "nome": "Pavuna - Passeio"
+  },
+  {
+    "numero": "374",
+    "nome": "Pavuna - Praça XV (via Costa Barros)"
+  },
+  {
+    "numero": "376",
+    "nome": "Pavuna - Praça XV (via Rua Mercúrio)"
+  },
+  {
+    "numero": "377",
+    "nome": "Pavuna - Praça XV (via Costa Barros)"
+  },
+  {
+    "numero": "338",
+    "nome": "Taquara - Candelária (via Linha Amarela)"
+  },
+  {
+    "numero": "341",
+    "nome": "Taquara - Candelária"
+  },
+  {
+    "numero": "369",
+    "nome": "Bangu - Tiradentes"
+  },
+  {
+    "numero": "370",
+    "nome": "Padre Miguel - Carioca"
+  },
+  {
+    "numero": "392",
+    "nome": "Bangu - Carioca"
+  },
+  {
+    "numero": "393",
+    "nome": "Bangu - Castelo"
+  },
+  {
+    "numero": "SR393",
+    "nome": "Rio da Prata (Bangu) - Largo da Carioca"
+  },
+  {
+    "numero": "396",
+    "nome": "Bairro Jabour - Carioca"
+  },
+  {
+    "numero": "397",
+    "nome": "Campo Grande - Carioca"
+  },
+  {
+    "numero": "SR397",
+    "nome": "Campo Grande - Carioca"
+  },
+  {
+    "numero": "2310",
+    "nome": "Bangu - Carioca"
+  },
+  {
+    "numero": "343",
+    "nome": "Joatinga - Praça XV (via Linha Amarela)"
+  },
+  {
+    "numero": "346",
+    "nome": "Gardenia Azul - Praça XV"
+  },
+  {
+    "numero": "320",
+    "nome": "Parque União (Aeroporto) - Praça XV"
+  },
+  {
+    "numero": "322",
+    "nome": "Ribeira - Castelo (via Cocotá)"
+  },
+  {
+    "numero": "323",
+    "nome": "Bananal - Castelo (via Cacuia)"
+  },
+  {
+    "numero": "327",
+    "nome": "Ribeira - Castelo (via Linha Vermelha)"
+  },
+  {
+    "numero": "328",
+    "nome": "Bananal - Castelo"
+  },
+  {
+    "numero": "119",
+    "nome": "Copacabana - Candelária"
+  },
+  {
+    "numero": "136",
+    "nome": "Rodoviária - Copacabana (via Leopoldina)"
+  },
+  {
+    "numero": "154",
+    "nome": "Ipanema - Central"
+  },
+  {
+    "numero": "180",
+    "nome": "Cosme Velho - Central (via Largo do Machado)"
+  },
+  {
+    "numero": "184",
+    "nome": "Laranjeiras - Central"
+  },
+  {
+    "numero": "157",
+    "nome": "Gávea Central (via Lagoa e Leblon)"
+  },
+  {
+    "numero": "438",
+    "nome": "Vila Isabel - Leblon (via Joquei)"
+  },
+  {
+    "numero": "006",
+    "nome": "Silvestre - Castelo"
+  },
+  {
+    "numero": "SE006",
+    "nome": "Silvestre - Castelo"
+  },
+  {
+    "numero": "010",
+    "nome": "Fátima Central"
+  },
+  {
+    "numero": "014",
+    "nome": "Paula Matos - Castelo"
+  },
+  {
+    "numero": "SE014",
+    "nome": "Paula Matos - Castelo"
+  },
+  {
+    "numero": "422",
+    "nome": "Grajaú - Cosme Velho"
+  },
+  {
+    "numero": "254",
+    "nome": "Madureira - Praça XV"
+  },
+  {
+    "numero": "277",
+    "nome": "Rocha Miranda - Praça XV (via São Cristóvão)"
+  },
+  {
+    "numero": "298",
+    "nome": "Acari - Castelo"
+  },
+  {
+    "numero": "344",
+    "nome": "Rocha Miranda - Praça XV"
+  },
+  {
+    "numero": "349",
+    "nome": "Rocha Miranda - Praça XV"
+  },
+  {
+    "numero": "2345",
+    "nome": "Vila Valqueire - Castelo (via Norte Shopping/R. Quiririm)"
+  },
+  {
+    "numero": "120",
+    "nome": "Central - Prado Júnior"
+  },
+  {
+    "numero": "124",
+    "nome": "Jardim Botânico (Horto) - Central (via Copacabana)"
+  },
+  {
+    "numero": "125",
+    "nome": "Central - General Osório (via Aterro do Flamengo)"
+  },
+  {
+    "numero": "217",
+    "nome": "Andaraí - Carioca"
+  },
+  {
+    "numero": "2203",
+    "nome": "Grajaú - Castelo"
+  },
+  {
+    "numero": "312",
+    "nome": "Olaria - Candelária (via São Cristóvão)"
+  },
+  {
+    "numero": "296",
+    "nome": "Irajá - Castelo"
+  },
+  {
+    "numero": "342",
+    "nome": "Jardim América - Castelo"
+  },
+  {
+    "numero": "SR342",
+    "nome": "Jardim América - Castelo"
+  },
+  {
+    "numero": "SV342",
+    "nome": "Passeio - Jardim América"
+  },
+  {
+    "numero": "306",
+    "nome": "Praça Seca - Castelo (via Av. Menezes Cortes)"
+  },
+  {
+    "numero": "331",
+    "nome": "Praça Seca - Castelo (via Linha Amarela)"
+  },
+  {
+    "numero": "332",
+    "nome": "Taquara - Castelo (via Barra da Tijuca)"
+  },
+  {
+    "numero": "348",
+    "nome": "Rio Centro - Castelo (via Linha Amarela)"
+  },
+  {
+    "numero": "2110",
+    "nome": "Gardênia Azul - Castelo"
+  },
+  {
+    "numero": "2111",
+    "nome": "Praça Seca - Castelo (via Av. Menezes Cortes)"
+  },
+  {
+    "numero": "2112",
+    "nome": "Taquara - Castelo (via Linha Amarela)"
+  },
+  {
+    "numero": "2114",
+    "nome": "Freguesia - Castelo"
+  },
+  {
+    "numero": "350",
+    "nome": "Irajá - Passeio"
+  },
+  {
+    "numero": "351",
+    "nome": "Irajá - Passeio (via Praça 27 Agosto)"
+  },
+  {
+    "numero": "261",
+    "nome": "Marechal Hermes - Castelo"
+  },
+  {
+    "numero": "300",
+    "nome": "Sulacap - Carioca"
+  },
+  {
+    "numero": "375",
+    "nome": "Ricardo de Albuquerque - Passeio"
+  },
+  {
+    "numero": "384",
+    "nome": "Pavuna - Passeio"
+  },
+  {
+    "numero": "385",
+    "nome": "Village Pavuna - Passeio (via Camboatá)"
+  },
+  {
+    "numero": "SV385",
+    "nome": "Village Pavuna - Passeio (via Av. Pres. Vargas)"
+  },
+  {
+    "numero": "386",
+    "nome": "Anchieta - Passeio (via Mariópolis)"
+  },
+  {
+    "numero": "399",
+    "nome": "Pavuna - Passeio (via Av. Pres. Vargas e R. Alcobaça)"
+  },
+  {
+    "numero": "2295",
+    "nome": "Pavuna - Castelo"
+  },
+  {
+    "numero": "2302",
+    "nome": "Mariópolis - Castelo"
+  },
+  {
+    "numero": "238",
+    "nome": "Água Santa - Praça XV"
+  },
+  {
+    "numero": "454",
+    "nome": "Méier - Prado Júnior (via Aterro do Flamengo)"
+  },
+  {
+    "numero": "455",
+    "nome": "Méier - Copacabana (via Aterro do Flamengo)"
+  },
+  {
+    "numero": "362",
+    "nome": "Honório Gurgel - Praça XV"
+  },
+  {
+    "numero": "SR362",
+    "nome": "Praça XV - Honório Gurgel"
+  },
+  {
+    "numero": "378",
+    "nome": "Marechal Hermes - Castelo"
+  },
+  {
+    "numero": "SR378",
+    "nome": "Marechal Hermes - Castelo"
+  }
+]

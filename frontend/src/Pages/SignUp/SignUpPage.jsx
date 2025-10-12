@@ -64,8 +64,9 @@ const Card = styled.div`
 
 const TitleCard = styled.h1`
   font-size: 2rem;
-  padding: 10px ;
-  color: ${colors.black}  
+  padding: 10px;
+  color: ${colors.primary_hover};
+  font-family: ${font.font_family}
 `
 const Form = styled.form`
   display: flex;

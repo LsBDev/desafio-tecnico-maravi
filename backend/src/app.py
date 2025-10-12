@@ -5,13 +5,14 @@ from .schemas import UserPublic, NotificationPublic
 from sqlalchemy import select
 from .database import get_session
 from .models import User, NotificationConfig
-from .routes import auth, buses
+from .routes import auth, buses, notifications
 
 
 app = FastAPI()
 setup_cors(app)
 app.include_router(auth.router)
 app.include_router(buses.router)
+app.include_router(notifications.router)
 
 
 # Rever a questão do .env -> Corrigir, está subindo para o github, não está no gitignore

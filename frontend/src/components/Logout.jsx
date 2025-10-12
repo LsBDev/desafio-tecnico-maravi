@@ -45,5 +45,5 @@ const LougoutTitle = styled.p`
 `
 
 const StyledButton = styled.img`
-    width: 18px;  
+    width: 15px;  
 `

@@ -27,7 +27,6 @@ const userIcon = new L.Icon({
 export default function LeafletMap({ linha_onibus, posicao_onibus, posicao_usuario }) {
   const {busPosition, setBusPosition} = useContext(BusContext);
 
-  // useEffects para pegar os dados dos onibus
     function getPositions() {
       axios.get(`${process.env.REACT_APP_API_URL}/buses/position`, {
         params: {
@@ -37,32 +36,24 @@ export default function LeafletMap({ linha_onibus, posicao_onibus, posicao_usuar
         }
     })
       .then((res) => {
-        console.log(`Dados que vem do retorno da função: ${res.data}`)
         const cleanData = res.data
           .map((bus) => ({
             ...bus,
-            // latitude: bus.latitude,
-            // longitude: bus.longitude
             latitude: parseFloat(bus.latitude.replace(",", ".")),
             longitude: parseFloat(bus.longitude.replace(",", ".")),
           }))
         setBusPosition(cleanData);
-        console.log("Dados limpo do Map", cleanData)
       })
       .catch((err) => {
-        console.error("Erro ao buscar dados:")
+        console.error("Erro ao buscar dados: ", {err})
       })
     }
-    // dispara o polling (igual ao LeafletMap fazia)
     useEffect(() => {
       if (!linha_onibus || posicao_usuario.length !== 2) return;
       getPositions();
       const interval = setInterval(getPositions, 60000);
       return () => clearInterval(interval);
     }, [linha_onibus, posicao_usuario]);
-    
-    console.log("busPosition", busPosition)
-    console.log(`Posição do usuário: ${posicao_usuario}`)
 
   return (
     <ContainerMap center={posicao_usuario} zoom={13} scrollWheelZoom={true}>

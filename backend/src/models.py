@@ -1,8 +1,8 @@
 from sqlalchemy.orm import registry, Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, String
 from typing import List
 from datetime import time, date
-
+ # active, completed, expired para a coluna status
 table_registry = registry()
 
 @table_registry.mapped_as_dataclass
@@ -24,8 +24,15 @@ class NotificationConfig:
     notification_date: Mapped[date]
     line_code: Mapped[str]    
     latitude: Mapped[float]
-    longitude: Mapped[float]    
+    longitude: Mapped[float]
     start_time: Mapped[time] 
     end_time: Mapped[time]    
     user: Mapped[User] = relationship(back_populates="configs", init=False)    
     is_active: Mapped[bool] = mapped_column(default=True)
+    notification_status: Mapped[str] = mapped_column(default="active")
+
+@table_registry.mapped_as_dataclass
+class MunicipalLine:
+    __tablename__ = 'municipal_lines'
+    numero: Mapped[str] = mapped_column(String, primary_key=True, index=True)
+    nome: Mapped[str] = mapped_column(String)

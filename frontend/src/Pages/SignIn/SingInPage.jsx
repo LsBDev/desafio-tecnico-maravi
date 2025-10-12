@@ -4,7 +4,7 @@ import UserContext from "../../contexts/UserContext.js"
 import { useState, useContext } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import styled from "styled-components"
-import { colors } from "../../styles/Variables.js"
+import { colors, font } from "../../styles/Variables.js"
 import useQuickIn from "../../hooks/useQuickIn.jsx"
 
 export default function SignInPage() {
@@ -49,9 +49,9 @@ export default function SignInPage() {
     <Container>
     <Card>
       <TitleCard>Login</TitleCard>
-      <Form onSubmit={login}>
-          <Input placeholder="E-mail" type="email" value={email} disabled={disabled} onChange={e => setEmail(e.target.value)} required/>
-          <Input placeholder="Senha" type="password" value={password} disabled={disabled} onChange={e => setPassword(e.target.value)} required/>
+      <Form onSubmit={login} autocomplete="on">
+          <Input placeholder="E-mail" type="email" value={email} disabled={disabled} onChange={e => setEmail(e.target.value)} autocomplete="username"  required/>
+          <Input placeholder="Senha" type="password" value={password} disabled={disabled} onChange={e => setPassword(e.target.value)}  autocomplete="current-password"  required/>
           <Button type="submit">Entrar</Button>
       </Form>
       <Cadastro to="/signup">Cadastre-se!</Cadastro>
@@ -72,7 +72,9 @@ const Container = styled.div`
 const TitleCard = styled.h1`
   font-size: 2rem;
   padding: 10px ;
-  color: ${colors.black}  
+  // color: ${colors.black}  
+  color: ${colors.primary_hover};
+  font-family: ${font.font_family}
 `
 
 const Card = styled.div`

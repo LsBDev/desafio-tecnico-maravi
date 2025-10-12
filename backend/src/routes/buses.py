@@ -3,19 +3,25 @@ from http import HTTPStatus
 from ..config import settings
 from datetime import datetime
 from ..security import get_current_user, get_session
-from ..models import User, NotificationConfig
+from ..models import User, NotificationConfig, MunicipalLine
 from sqlalchemy.orm import Session
-from ..schemas import NotificationCreate
+from sqlalchemy import select
+from ..schemas import NotificationCreate, MunicipalLineSchema
 import redis
 import json
 from ..services.notification_services import travel_time
-
 
 
 router = APIRouter(
   prefix='/buses',
   tags=['buses']
 )
+
+@router.get("/municipal_lines", status_code=HTTPStatus.OK, response_model=list[MunicipalLineSchema])
+def get_municipal_lines(session=Depends(get_session)):
+  municipal_lines = session.scalars(select(MunicipalLine)).all()
+  return municipal_lines
+
 
 @router.post("/notification", status_code=HTTPStatus.CREATED)
 async def create_notification(
@@ -46,90 +52,6 @@ async def create_notification(
   session.refresh(notification)
 
   return {"Message": "Notificação agendada!"}
-
-
-
-# @router.get("/position", status_code=HTTPStatus.OK)
-# async def get_bus_position(linha: str, user_lat: float, user_lng: float):
-#   print("entrou no get_bus_position")
-
-#   r = redis.Redis(
-#   host=settings.redis_host, 
-#   port=settings.redis_port, 
-#   db=0,
-#   decode_responses=True
-#   )
-
-#   try:
-#     bus_data_raw = r.get("bus_data_current") #lista de todos os onibus
-#     if not bus_data_raw:
-#       print(f"Os Dados de ônibus não disponíveis no Redis.")
-#       return {"message": "Dados de ônibus não disponíveis."}
-    
-#     # ler dados do redis
-#     bus_data = json.loads(bus_data_raw)
-    
-#     #filtro pela linha
-#     onibus_da_linha_dict = {}
-#     # onibus_da_linha  = []
-
-#     for bus in bus_data:
-#       # Verifica se a linha do ônibus corresponde à linha que você quer
-#       if str(bus.get('linha')) == linha:
-
-#         ordem_do_onibus = bus.get('ordem')
-#         # Converte o timestamp para um número inteiro para comparação
-#         datahora_atual = int(bus.get('datahora'))
-#         if ordem_do_onibus in onibus_da_linha_dict:
-#           # Pega o ônibus que já está no dicionário
-#           onibus_existente = onibus_da_linha_dict[ordem_do_onibus]
-#           # Converte o timestamp do ônibus existente para comparação
-#           datahora_existente = int(onibus_existente.get('datahora'))          
-#           # Se a data/hora atual for mais recente, substitui o ônibus no dicionário
-#           if datahora_atual > datahora_existente:
-#             onibus_da_linha_dict[ordem_do_onibus] = bus
-#         else:
-#           # Se não existe, adiciona o ônibus ao dicionário
-#           onibus_da_linha_dict[ordem_do_onibus] = bus
-#     # Agora, converte os valores do dicionário de volta para uma lista
-#     onibus_filtrados = list(onibus_da_linha_dict.values())
-
-#     if not onibus_filtrados:
-#       return {"message": "Nenhum ônibus encontrado para a linha."}
-
-#     # Adiciona a informação de tempo a cada ônibus
-#     ponto_usuario = (user_lat, user_lng)
-#     google_key = settings.google_key
-#     onibus_com_tempo = []
-
-#     for onibus in onibus_filtrados:
-#       try:
-#         latitude_str = onibus.get('latitude').replace(',', '.')
-#         longitude_str = onibus.get('longitude').replace(',', '.')
-#         ponto_onibus = (float(latitude_str), float(longitude_str))
-        
-#         tempo_em_minutos = travel_time(ponto_onibus, ponto_usuario, google_key)
-        
-#         # Adiciona a nova chave ao dicionário do ônibus
-#         if tempo_em_minutos is not None:
-#           onibus['tempo_em_minutos'] = f"{int(tempo_em_minutos)} min"
-#         else:
-#           onibus['tempo_em_minutos'] = "Indisponível"
-#       except (ValueError, TypeError) as e:
-#         print(f"Erro ao converter coordenadas ou calcular tempo para o ônibus {onibus.get('ordem')}: {e}")
-#         onibus['tempo_em_minutos'] = "Indisponível"
-      
-#       onibus_com_tempo.append(onibus)
-
-#     return onibus_com_tempo
-
-#   except json.JSONDecodeError as err:
-#     raise HTTPException(
-#       status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
-#       detail=f"Erro ao decodificar dados do Redis: {err}"
-#     )
-
-
 
 
 @router.get("/position", status_code=HTTPStatus.OK)
@@ -227,44 +149,3 @@ async def get_bus_position(linha: str, user_lat: float, user_long: float):
   #     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
   #     detail=f"Erro ao decodificar dados do Redis: {err}"
   #   )
-
-
-
-# Colocar aqui as regras que filtram os dados recebidos da APi do ônibus // Na verdade ver qual a melhor estrutura 
-# @router.get("/onibus-rj", status_code=HTTPStatus.OK)
-# async def get_bus_data(
-#     linha: int,
-#     latitude: float,
-#     longitude: float,
-#     data: str,
-#     hora_inicio: str,
-#     hora_fim: str,
-#     current_user: User = Depends(get_current_user)
-#   ):
-
-#   # session: Depends(get_session)
-
-#   # hoje = datetime.now().strftime("%Y-%m-%d")
-#   dataInicial = f"{data}+{hora_inicio}:00"
-#   dataFinal = f"{data}+{hora_fim}:00"
-#   # compor url
-#   url =f"dataInicial={dataInicial}&dataFinal={dataFinal}"
-#   # url="dataInicial=2025-10-20+15:40:00&dataFinal=2025-10-20+15:43:00"
-
-#   async with httpx.AsyncClient() as client:
-#     try:
-#       response = await client.get(settings.api_url + url, timeout = 10.0)
-#       response.raise_for_status()
-
-#       # Fazer aqui a lógica de filtro dos dados
-#       # armazenar no Redis
-#       # Ver uso do celery
-
-#       return response.json()
-    
-    
-#     except httpx.HTTPStatusError as exc:
-#       return {"error": f"Erro na requisição: {exc.response.status_code} - {exc.response.text}"}
-#     except Exception as exc:
-#       return {"error": f"Ocorreu um erro: {exc}"}
-
