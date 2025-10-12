@@ -9,6 +9,7 @@ import BusContext from "../contexts/BusContext.js"
 import { colors, font } from "../styles/Variables.js"
 import useQuickOut from "../hooks/useQuickout.jsx"
 import BusList from "../components/BusList.jsx"
+import { toast } from 'react-toastify';
 
 
 const API_URL = process.env.REACT_APP_API_URL
@@ -48,20 +49,46 @@ export default function Home() {
   function buscaDadosOnibus(event) {
     event.preventDefault()
     setDisabled(true)
-    if (horaInicio && horaFim) {
-      const [hI, mI] = horaInicio.split(":").map(Number)
-      const [hF, mF] = horaFim.split(":").map(Number)
+    // if (horaInicio && horaFim) {
+    //   const [hI, mI] = horaInicio.split(":").map(Number)
+    //   const [hF, mF] = horaFim.split(":").map(Number)
 
-      const totalMinutosInicio = hI*60 + mI
-      const totalMinutosFim = hF*60 + mF
-      if ((totalMinutosFim - totalMinutosInicio) <= 0 || (totalMinutosFim - totalMinutosInicio) > 60) {
-        alert("O intervalo de horário deve ser de no máximo 1 hora.")
-        return
-      }
+    //   const totalMinutosInicio = hI*60 + mI
+    //   const totalMinutosFim = hF*60 + mF
+    //   if ((totalMinutosFim - totalMinutosInicio) <= 0 || (totalMinutosFim - totalMinutosInicio) > 60) {
+    //     alert("O intervalo de horário deve ser de no máximo 1 hora.")
+    //     return
+    //   }
+    // }
+    //===================================
+    if (horaInicio && horaFim) {
+        const [hI, mI] = horaInicio.split(":").map(Number)
+        const [hF, mF] = horaFim.split(":").map(Number)
+        
+        // --- INÍCIO DA NOVA LÓGICA DE VALIDAÇÃO ---
+        const inicioEmMinutos = hI * 60 + mI;
+        let fimEmMinutos = hF * 60 + mF;
+
+        // Se a hora de fim for anterior à de início, assume que é no dia seguinte
+        if (fimEmMinutos < inicioEmMinutos) {
+            fimEmMinutos += 24 * 60; // Adiciona 24 horas em minutos
+        }
+
+        const diferencaEmMinutos = fimEmMinutos - inicioEmMinutos;
+
+        // Agora a validação é simples: a diferença deve ser menor ou igual a 60 minutos
+        if (diferencaEmMinutos <= 0 || diferencaEmMinutos > 60) {
+            toast.error("O intervalo de horário deve ser de no máximo 1 hora.");
+            setDisabled(false); // Reativa o botão se a validação falhar
+            return;
+        }
+        // --- FIM DA NOVA LÓGICA DE VALIDAÇÃO ---
     }
 
+    //===================================
+
     if(!token || !user) {
-      alert("Sua sessão expirou. Faça login novamente")
+      toast.warn("Sua sessão expirou. Faça login novamente")
       navigate("/")
     }
     // API de geocodificação Nominatim
@@ -98,10 +125,11 @@ export default function Home() {
     .then(res => {
       setDadosNotificacao(res.data)      
       setDisabled(false)
+      toast.success("Notificação cadastrada com sucesso!")
     })
     .catch(err => {
       if (err.response && (err.response.status === 401 || err.response.status === 403)) {
-        alert("Sua sessão expirou. Faça login novamente.");
+        toast.warn("Sua sessão expirou. Faça login novamente.")
         localStorage.removeItem("token");
         localStorage.removeItem('user');
         window.location.reload();
@@ -109,9 +137,9 @@ export default function Home() {
       }
       console.error("Erro na busca de dados:", err.response);
       if (err.message === "Ponto não encontrado.") {
-        alert("Não foi possível encontrar as coordenadas para o ponto informado. Tente um endereço mais preciso.");
+        toast.error("Não foi possível encontrar as coordenadas para o ponto informado. Tente um endereço mais preciso.");
       } else {
-        alert("Ocorreu um erro ao buscar as informações. Por favor, tente novamente mais tarde.");
+        toast.error("Ocorreu um erro ao buscar as informações. Por favor, tente novamente mais tarde.");
       }
       setDisabled(false)
     });
@@ -174,7 +202,7 @@ const Container = styled.div`
   font-family: ${font.font_family};
   background: ${colors.white};
   background-color: ${colors.background}; 
-  padding: 30px;
+  padding: 50px;
   `;
 const MainContent = styled.div`
   width: 100%; 

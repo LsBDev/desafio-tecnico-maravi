@@ -23,8 +23,8 @@ export default function BusList({ buses, linha_onibus }) {
 }
 
 const ContainerLista = styled.div`
-  width: 90%;
-  max-width: 1200px;
+  width: 100%;
+  max-width: 1250px;
   background: ${colors.white};
   border-radius: 12px;
   margin-top: 25px;
@@ -47,6 +47,9 @@ const Grid = styled.div`
   justify-content: flex-start;
   align-items: flex-start;
   gap: 15px;
+  @media (max-width: 730px) {
+    justify-content: center;
+  }
 `;
 
 // cada card ocupa uma largura fixa mínima, e quebra de linha naturalmente

@@ -1,5 +1,6 @@
 import { createGlobalStyle } from "styled-components"
 import background from "../assets/imagem_de_fundo.jpeg";
+import { font } from "./Variables.js";
 
 const GlobalStyle = createGlobalStyle`
   html, body, div, span, applet, object, iframe,
@@ -36,6 +37,7 @@ const GlobalStyle = createGlobalStyle`
     background-attachment: fixed;
     margin: 0;
     padding: 0;
+    font-family: ${font.font_family}
   }
 
   body::after {
@@ -47,6 +49,7 @@ const GlobalStyle = createGlobalStyle`
     height: 100%;
     background-color: rgba(0, 0, 255, 0.4);
     z-index: -1; // Coloque o z-index negativo para ficar atrás do conteúdo
+    font-family: ${font.font_family}
 
   }
   ol, ul {

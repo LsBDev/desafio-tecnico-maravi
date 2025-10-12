@@ -7,9 +7,12 @@ import AuthContext from "./contexts/AuthContext.js"
 import UserContext from "./contexts/UserContext.js"
 import { useState } from "react"
 import 'leaflet/dist/leaflet.css';
-import { colors } from "./styles/Variables.js"
+import { colors, font } from "./styles/Variables.js"
 import Logo from "../src/assets/Logo.png"
 import BusContext from "./contexts/BusContext.js"
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import LogoutButton from "./components/Logout.jsx"
 
 export default function App() {
   const [token, setToken] = useState(localStorage.getItem("token"))
@@ -29,6 +32,7 @@ export default function App() {
                   </LeftSection>
                   <RightSection>
                     {user ? <Title>Olá, {user}!</Title> : ""}
+                    {user ? <LogoutButton/> : ""}
                   </RightSection>
                 </TopRow>
                 <BottomRow>
@@ -40,7 +44,8 @@ export default function App() {
                 <Route path="/signup" element={<SignUpPage/>}/>
                 <Route path="/home" element={<Home/>}/>
               </Routes>
-            </BrowserRouter>    
+            </BrowserRouter>
+            <ToastContainer />    
           </div>
         </BusContext.Provider>
       </UserContext.Provider>
@@ -76,6 +81,8 @@ const LeftSection = styled.div`
 const RightSection = styled.div`
   display: flex;
   align-items: center;
+  flex-direction: column;
+  gap: 13px;
 `;
 
 const BottomRow = styled.div`
@@ -91,7 +98,7 @@ const Title = styled.h1`
   color: ${colors.white};
   font-size: 1.2rem;
   font-weight: 500;
-  font-family: 'Roboto Serif', sans-serif;
+  font-family: ${font.font_family}
 `
 const Img = styled.img`
   max-width: 150px;
