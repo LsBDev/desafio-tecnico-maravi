@@ -96,10 +96,7 @@ export default function Home() {
       }
     })
     .then(res => {
-      console.log("Notificação agendada com sucesso!");
-      console.log("Notificação dados", res.data);
-      setDadosNotificacao(res.data);
-      console.log(`Dados que vem do back assim que agenda: ${dadosNotificacao}`)
+      setDadosNotificacao(res.data)      
       setDisabled(false)
     })
     .catch(err => {
@@ -119,11 +116,11 @@ export default function Home() {
       setDisabled(false)
     });
   }
-// =======================    
   
 
 // # Fazer um get em notificações, ver as noti ativas e posições o usuário,
 //  e da linha e coloca-lás num select, pra poder mudar o mapa dinamico
+// popup de erros
 
   return (
     <Container>
@@ -253,4 +250,21 @@ const ContainerMap = styled.div`
   overflow: hidden;
   box-shadow: ${colors.box_shadow};
   /* background: #000; */
+`
+
+const NewButton = styled.button`
+  width: 35%;
+  background: ${colors.primary_hover};
+  color: ${colors.white};
+  font-weight: 600;
+  padding: 9px;
+  border: none;
+  border-radius: 10px;
+  font-size: .6rem;
+  font-family: ${font.font_family};
+  cursor: pointer;
+  transition: 0.3s;
+  &:hover {
+    background: ${colors.primary};
+  }
 `

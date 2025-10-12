@@ -26,7 +26,6 @@ const userIcon = new L.Icon({
 
 export default function LeafletMap({ linha_onibus, posicao_onibus, posicao_usuario }) {
   const {busPosition, setBusPosition} = useContext(BusContext);
-  // console.log(`Posição do Usuário ${posicao_usuario[0]}`)
 
   // useEffects para pegar os dados dos onibus
     function getPositions() {
@@ -47,13 +46,6 @@ export default function LeafletMap({ linha_onibus, posicao_onibus, posicao_usuar
             latitude: parseFloat(bus.latitude.replace(",", ".")),
             longitude: parseFloat(bus.longitude.replace(",", ".")),
           }))
-          // .filter(
-          //   (bus) =>
-          //     !isNaN(bus.latitude) &&
-          //     !isNaN(bus.longitude) &&
-          //     bus.latitude !== 0 &&
-          //     bus.longitude !== 0
-          // );
         setBusPosition(cleanData);
         console.log("Dados limpo do Map", cleanData)
       })
