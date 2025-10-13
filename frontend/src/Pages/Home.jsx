@@ -12,11 +12,6 @@ import BusList from "../components/BusList.jsx"
 import { toast } from 'react-toastify';
 
 
-const API_URL = process.env.REACT_APP_API_URL
-
-// API de geocodificação => Jogar pro .env
-const NOMINATIM_API_URL = "https://nominatim.openstreetmap.org/search"
-
 export default function Home() {
   const [linha, setLinha] = useState("")
   const [ponto, setPonto] = useState("")
@@ -31,19 +26,33 @@ export default function Home() {
   const [userPosition, setUserPosition] = useState([])
   const [disabled, setDisabled] = useState(false);
   const navigate = useNavigate()
-
-  //=============================
   const [linhasMunicipais, setLinhasMunicipais] = useState([]); // Armazena a lista de linhas
   const [linhaSelecionada, setLinhaSelecionada] = useState(""); // Armazena a linha selecionada
   const [trajeto, setTrajeto] = useState(""); // Armazena o trajeto da linha
+  //==============================
+  //Manter informação no local storage
+  // NOVO: useEffect para carregar o estado do localStorage
+  useEffect(() => {
+    const savedLine = localStorage.getItem('last_agendamento_linha');
+    const savedUserPosition = localStorage.getItem('last_agendamento_user_position');
+    const savedDadosNotificacao = localStorage.getItem('last_agendamento_dados_notificacao');
+
+    if (savedLine && savedUserPosition && savedDadosNotificacao) {
+      setLinha(savedLine);
+      setUserPosition(JSON.parse(savedUserPosition));
+      setDadosNotificacao(JSON.parse(savedDadosNotificacao));
+      // toast.info("Carregando o último aviso agendado.");
+    }
+  }, []); // Roda apenas uma vez na montagem do componente
+  //==================================
 
    useEffect(() => {
-    axios.get(`${API_URL}/buses/municipal_lines`)
+     axios.get(`${process.env.REACT_APP_API_URL}/buses/municipal_lines`)
       .then(res => {
         const linhasOrdenadas = res.data.sort((a, b) => {
         return a.numero.localeCompare(b.numero, undefined, { numeric: true, sensitivity: 'base' });
       });
-        console.log(res.data)
+        // console.log(res.data)
         setLinhasMunicipais(linhasOrdenadas);
       })
       .catch(err => {
@@ -112,7 +121,8 @@ export default function Home() {
       navigate("/")
     }
     // API de geocodificação Nominatim
-    axios.get(NOMINATIM_API_URL, {
+    // const NOMINATIM_API_URL = "https://nominatim.openstreetmap.org/search"
+    axios.get(process.env.REACT_APP_NOMINATIM_API_URL, {
       params: {
         q: `${ponto}, Rio de Janeiro`,
         format: "json",
@@ -123,15 +133,13 @@ export default function Home() {
       if (geoResponse.data && geoResponse.data.length > 0) {
         const { lat, lon } = geoResponse.data[0];
         setUserPosition([lat, lon])
-        return axios.post(`${API_URL}/buses/notification`, 
-          { 
-            linha,
-            latitude: lat,
-            longitude: lon,
-            data: dataNotificacao,
-            hora_inicio: horaInicio,
-            hora_fim: horaFim,
-          }, 
+
+//===================
+        localStorage.setItem('last_agendamento_user_position', JSON.stringify([lat, lon]));// MUDOU AQUI
+//====================
+
+        return axios.post(`${process.env.REACT_APP_API_URL}/buses/notification`, 
+          { linha, latitude: lat, longitude: lon, data: dataNotificacao, hora_inicio: horaInicio, hora_fim: horaFim}, 
           { 
             headers: {
               Authorization: `Bearer ${token}`
@@ -143,9 +151,12 @@ export default function Home() {
       }
     })
     .then(res => {
-      setDadosNotificacao(res.data)      
+      setDadosNotificacao(res.data) 
+      console.log("Dados da Notificação", res.data)     
       setDisabled(false)
       toast.success("Notificação cadastrada com sucesso!")
+      localStorage.setItem('last_agendamento_linha', linha);
+      localStorage.setItem('last_agendamento_dados_notificacao', JSON.stringify(res.data));
     })
     .catch(err => {
       if (err.response && (err.response.status === 401 || err.response.status === 403)) {
@@ -164,24 +175,18 @@ export default function Home() {
       setDisabled(false)
     });
   }
-  
-
-// # Fazer um get em notificações, ver as noti ativas e posições o usuário,
-//  e da linha e coloca-lás num select, pra poder mudar o mapa dinamico
-// popup de erros
 
   return (
     <Container>
-      <MainContent>
+      <MainContent>        
         <Form onSubmit={buscaDadosOnibus}>
-
 
           <FormLineContainer> {/* NOVO: Container para agrupar os campos de linha e select */}
             <SelectWrapper> {/* NOVO: Wrapper para o select */}
               <Label htmlFor="linha-select">Linha do ônibus</Label>
               <Select id="linha-select" disabled={disabled} onChange={(e) => {
                 setLinhaSelecionada(e.target.value);
-                setLinha(e.target.value); // Garante que a variável 'linha' seja a selecionada
+                setLinha(e.target.value);
               }} required={!linha}>
                 <option value="">Linha</option>
                 {linhasMunicipais.map(item => (
@@ -191,7 +196,7 @@ export default function Home() {
             </SelectWrapper>
             <LineOr> </LineOr> {/* NOVO: Texto "OU" */}
             <Input 
-              placeholder="Linha digitada" 
+              placeholder="Digite a Linha" 
               type="text" 
               disabled={disabled || linhaSelecionada} // Desabilita se um select foi escolhido
               onChange={(e) => {
@@ -201,9 +206,6 @@ export default function Home() {
               required={!linhaSelecionada}
             />
           </FormLineContainer>
-
-
-
 
           <Input value={trajeto} placeholder="Trajeto da Linha" readOnly disabled={true} style={{ fontWeight: 'bold' }}/> 
           {/* <Input placeholder="Linha" type="text" disabled={disabled} onChange={(e) => setLinha(e.target.value)} required/> */}
@@ -255,7 +257,7 @@ const Container = styled.div`
   background: ${colors.white};
   background-color: ${colors.background}; 
   padding: 50px;
-  `;
+`
 const MainContent = styled.div`
   width: 100%; 
   display: flex;
@@ -263,7 +265,7 @@ const MainContent = styled.div`
   justify-content: center;
   align-items: center;
   gap: 30px;
-`;
+`
 const Form = styled.form`
   width: 320px;
   display: flex;
@@ -271,14 +273,12 @@ const Form = styled.form`
   padding: 20px 0;
   gap: 15px
 `
-
 const SelectWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 5px;
   flex: 1;
-`;
-
+`
 const Select = styled.select`
   width: 100%;
   padding: 11px 13px;
@@ -292,22 +292,18 @@ const Select = styled.select`
     outline: none;
     box-shadow: ${colors.box_shadow};
   }
-`;
-
+`
 const FormLineContainer = styled.div`
   display: flex;
   align-items: flex-end;
   gap: 10px;
   margin-bottom: 5px;
-`;
-
+`
 const LineOr = styled.span`
   font-size: 14px;
   color: ${colors.darkGray};
   margin-bottom: 12px;
-`;
-
-
+`
 const ContainerData = styled.div`
   display: flex;
   flex-direction: column;
@@ -342,7 +338,7 @@ const Input = styled.input`
   border-color: ${colors.primary};
   outline: none;
   box-shadow: ${colors.box_shadow};
-}
+  }
 `
 const Button = styled.button`
   background: ${colors.primary};
@@ -368,7 +364,6 @@ const ContainerMap = styled.div`
   box-shadow: ${colors.box_shadow};
   /* background: #000; */
 `
-
 const NewButton = styled.button`
   width: 35%;
   background: ${colors.primary_hover};

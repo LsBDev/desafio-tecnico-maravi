@@ -23,6 +23,7 @@ def check_and_send_notification(notification_id):
   # Tenta adquirir o lock para esta notificação específica
   lock_acquired = r.set(lock_key, "locked", ex=10, nx=True)
   print("Adquiriu o lock_key = linha 25 notification_tasks")
+
   if not lock_acquired:
     print(f"[{datetime.now()}] Notificação {notification_id} já está sendo processada por outro worker. Ignorando.")
     return
@@ -47,6 +48,9 @@ def check_and_send_notification(notification_id):
     if not notification.is_active or notification.notification_date != hoje:
       session.close()
       return
+    
+
+    
 
     start_time_db = notification.start_time
     end_time_db = notification.end_time
@@ -59,11 +63,14 @@ def check_and_send_notification(notification_id):
     if hora_atual > end_time_db:
       print(f"[{datetime.now()}] Janela de tempo da notificação {notification.id} expirou. Desativando...")
       notification.is_active = False
+      notification.notification_status = "expired"
       session.add(notification)
       session.commit()
-      session.refresh(notification)
-      session.close()
-      return
+      # session.refresh(notification)
+      # session.close()
+      # return
+
+
 
     bus_data_raw = r.get("bus_data_current")
     if not bus_data_raw:
@@ -128,7 +135,8 @@ def check_and_send_notification(notification_id):
           print("Caiu na condição dos 10 minutos, Notificou ao usuário")
           send_email(user.username, user.email, notification.line_code, tempo_em_minutos)
           notification.is_active = False
-          session.add(notification)
+          notification.notification_status = "completed"
+          # session.add(notification)
           session.commit()
           session.refresh(notification)
           print(f"[{datetime.now()}] Notificação {notification.id} desativada após envio.")
@@ -137,7 +145,7 @@ def check_and_send_notification(notification_id):
         print(f"Sem notificação! Tempo de chegada {tempo_em_minutos:.0f}")
   except Exception as exc:
     print(f"Erro na tarefa de notificação: {exc}")
-  
+    session.rollback()
   finally:
     r.delete(lock_key)
     session.close()

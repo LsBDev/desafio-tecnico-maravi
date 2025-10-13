@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthContext from '../contexts/AuthContext.js';
 import UserContext from '../contexts/UserContext.js';
@@ -14,36 +14,38 @@ export default function LogoutButton() {
   const { setUser } = useContext(UserContext);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    localStorage.removeItem("token")
+    localStorage.removeItem("user")
+    localStorage.removeItem("last_agendamento_linha")
+    localStorage.removeItem("last_agendamento_user_position")
+    localStorage.removeItem("last_agendamento_bus_position")
+    localStorage.removeItem("last_agendamento_dados_notificacao")
     setToken(null);
     setUser(null);
-    toast.info("Você foi desconectado. Até a próxima!");
-    navigate("/");
+    toast.info("Você foi desconectado. Até a próxima!")
+    navigate("/")
   };
 
   return (
-    <ContainerLogout>
+    <ContainerLogout onClick={handleLogout}>
         <LougoutTitle>Sair</LougoutTitle>
-        <StyledButton onClick={handleLogout} src={Logout}/>
+        <StyledButton src={Logout}/>
     </ContainerLogout>
-  );
+  )
 }
 
 const ContainerLogout = styled.div`
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 5px
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px
 `
-
 const LougoutTitle = styled.p`
-    font-size: 1rem;
-    text-align: center;
-    font-family: ${font.font_family}
+  font-size: 1rem;
+  text-align: center;
+  font-family: ${font.font_family}
 `
-
 const StyledButton = styled.img`
-    width: 15px;  
+  width: 15px;  
 `

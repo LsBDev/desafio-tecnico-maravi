@@ -89,6 +89,16 @@ const GlobalStyle = createGlobalStyle`
     font-weight: 600;
     color:  hsl(20, 100%, 20%);
   }
+
+  .leaflet-control-container,
+  .leaflet-pane {
+    z-index: 999 !important;
+  }
+
+  .leaflet-control-zoom,
+  .leaflet-control-attribution {
+    z-index: 999 !important;
+  }
 `
 
 export default GlobalStyle

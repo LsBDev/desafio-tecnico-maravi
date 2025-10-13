@@ -41,12 +41,13 @@ class NotificationPublic(BaseModel):
   start_time: time
   end_time: time
   is_active: bool
+  notification_status: str
 
 class NotificationUpdate(BaseModel):
   is_active: bool
 
 class MunicipalLineSchema(BaseModel):
-    numero: str
-    nome: str
-    class Config:
-        orm_mode = True
+  numero: str
+  nome: str
+  class Config:
+    orm_mode = True

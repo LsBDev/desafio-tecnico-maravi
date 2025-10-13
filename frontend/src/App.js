@@ -1,18 +1,20 @@
 import styled from "styled-components"
-import {BrowserRouter, Routes, Route} from "react-router-dom"
+import {BrowserRouter, Routes, Route, Link} from "react-router-dom"
 import Home from "./Pages/Home.jsx"
 import SignInPage from "./Pages/SignIn/SingInPage.jsx"
 import SignUpPage from "./Pages/SignUp/SignUpPage.jsx"
 import AuthContext from "./contexts/AuthContext.js"
 import UserContext from "./contexts/UserContext.js"
 import { useState } from "react"
-import 'leaflet/dist/leaflet.css';
+import 'leaflet/dist/leaflet.css'
 import { colors, font } from "./styles/Variables.js"
 import Logo from "../src/assets/Logo.png"
 import BusContext from "./contexts/BusContext.js"
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 import LogoutButton from "./components/Logout.jsx"
+import NavBar from "./components/NavBar.jsx"
+import MyNotifications from "./Pages/MyNotifications.jsx"
 
 export default function App() {
   const [token, setToken] = useState(localStorage.getItem("token"))
@@ -28,7 +30,9 @@ export default function App() {
               <HearderContainer>
                 <TopRow>
                   <LeftSection>
-                    <Img src={Logo} alt="Logo Avisa Aí"/>
+                    <Link to="/">
+                      <Img src={Logo} alt="Logo Avisa Aí" />
+                    </Link>                    
                   </LeftSection>
                   <RightSection>
                     {user ? <Title>Olá, {user}!</Title> : ""}
@@ -36,13 +40,14 @@ export default function App() {
                   </RightSection>
                 </TopRow>
                 <BottomRow>
-                  {/* <nav>Menu de Navegação Aqui</nav> */}
+                  {user ? <NavBar/> : ""}                 
                 </BottomRow>
               </HearderContainer>
               <Routes>
                 <Route path="/" element={<SignInPage/>}/>
                 <Route path="/signup" element={<SignUpPage/>}/>
                 <Route path="/home" element={<Home/>}/>
+                <Route path="/my-notifications" element={<MyNotifications/>}/>
               </Routes>
             </BrowserRouter>
             <ToastContainer />    
@@ -60,10 +65,9 @@ const HearderContainer = styled.header`
   box-shadow: ${colors.box_shadow};
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 1000 !important;
   padding: 8px 30px;
-`;
-
+`
 const TopRow = styled.div`
   display: flex;
   justify-content: space-between; /* Empurra Logo e Usuário para os cantos */
@@ -71,27 +75,24 @@ const TopRow = styled.div`
   width: 100%;
   margin-bottom: 10px; /* Espaço entre a linha de cima e o menu */
   gap: 30px;
-`;
-
+`
 const LeftSection = styled.div`
   display: flex;
   align-items: center;
-`;
-
+`
 const RightSection = styled.div`
   display: flex;
   align-items: center;
   flex-direction: column;
   gap: 13px;
-`;
-
+`
 const BottomRow = styled.div`
   display: flex;
   justify-content: center; /* Centraliza o menu horizontalmente */
   width: 100%;
   font-size: 1.1rem;
   color: ${colors.white};
-`;
+`
 const Title = styled.h1`
   padding: 0;
   margin: 0;
@@ -103,5 +104,3 @@ const Title = styled.h1`
 const Img = styled.img`
   max-width: 150px;
 `
-
-

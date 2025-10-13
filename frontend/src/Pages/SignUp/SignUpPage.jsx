@@ -52,7 +52,6 @@ const Container = styled.div`
   font-family: 'Roboto', sans-serif;
   background: ${colors.background};
 `
-
 const Card = styled.div`
   background: ${colors.white};
   padding: 40px;
@@ -61,7 +60,6 @@ const Card = styled.div`
   max-width: 380px;
   text-align: center;
 `
-
 const TitleCard = styled.h1`
   font-size: 2rem;
   padding: 10px;

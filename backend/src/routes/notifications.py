@@ -13,7 +13,7 @@ router = APIRouter(
 )
 
 
-@router.get("/user/", response_model=List[dict])
+@router.get("/user", response_model=List[dict])
 async def get_user_notifications(
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session)
@@ -34,9 +34,9 @@ async def get_user_notifications(
             "start_time": n.start_time,
             "end_time": n.end_time,
             "is_active": n.is_active,
-            "status": n.status,
             "latitude": n.latitude,
-            "longitude": n.longitude
+            "longitude": n.longitude,
+            "status": n.notification_status
         }
         for n in notifications
     ]
@@ -45,7 +45,6 @@ async def get_user_notifications(
 async def update_notification_status(
     notification_id: int,
     notification_update: NotificationUpdate,
-    is_active: bool,
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
@@ -60,7 +59,7 @@ async def update_notification_status(
     if notification.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Você não tem permissão para alterar esta notificação.")
 
-    notification.is_active = is_active
+    notification.is_active = notification_update.is_active
     session.add(notification)
     session.commit()
     session.refresh(notification)

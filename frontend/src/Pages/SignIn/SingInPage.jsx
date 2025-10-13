@@ -6,6 +6,7 @@ import { Link, useNavigate } from "react-router-dom"
 import styled from "styled-components"
 import { colors, font } from "../../styles/Variables.js"
 import useQuickIn from "../../hooks/useQuickIn.jsx"
+import { toast } from "react-toastify"
 
 export default function SignInPage() {
   const [email, setEmail] = useState("")
@@ -40,7 +41,10 @@ export default function SignInPage() {
       navigate("/home")
     })
     .catch((err) => {
-      console.error(err.response.data)
+      console.error(err.response.data.detail)
+      if (err.response.data.detail === "Credenciais incorretas."){
+        toast.error("Credenciais incorretas!");
+      }
       setDisabled(false);
     })
   }
@@ -49,15 +53,14 @@ export default function SignInPage() {
     <Container>
     <Card>
       <TitleCard>Login</TitleCard>
-      <Form onSubmit={login} autocomplete="on">
-          <Input placeholder="E-mail" type="email" value={email} disabled={disabled} onChange={e => setEmail(e.target.value)} autocomplete="username"  required/>
-          <Input placeholder="Senha" type="password" value={password} disabled={disabled} onChange={e => setPassword(e.target.value)}  autocomplete="current-password"  required/>
-          <Button type="submit">Entrar</Button>
+      <Form onSubmit={login} autoComplete="on">
+        <Input placeholder="E-mail" type="email" value={email} disabled={disabled} onChange={e => setEmail(e.target.value)} autoComplete="username"  required/>
+        <Input placeholder="Senha" type="password" value={password} disabled={disabled} onChange={e => setPassword(e.target.value)}  autoComplete="current-password"  required/>
+        <Button type="submit">Entrar</Button>
       </Form>
       <Cadastro to="/signup">Cadastre-se!</Cadastro>
     </Card>
     </Container>
-
   )
 }
 const Container = styled.div`
@@ -68,7 +71,6 @@ const Container = styled.div`
   background: ${colors.white};
   background-color: ${colors.background}; 
 `
-
 const TitleCard = styled.h1`
   font-size: 2rem;
   padding: 10px ;
@@ -76,7 +78,6 @@ const TitleCard = styled.h1`
   color: ${colors.primary_hover};
   font-family: ${font.font_family}
 `
-
 const Card = styled.div`
   background: ${colors.white};
   padding: 40px;
@@ -85,7 +86,6 @@ const Card = styled.div`
   max-width: 380px;
   text-align: center;
 `
-
 const Form = styled.form`
   display: flex;
   flex-direction: column;
