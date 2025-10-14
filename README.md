@@ -19,4 +19,6 @@ Com o Docker Compose, todo o ambiente de desenvolvimento é orquestrado de forma
 - Abra o terminal na raiz do projeto (onde está o arquivo docker-compose.yml).
 - Execute o comando para construir as imagens e iniciar todos os serviços:
 
-# docker-compose up --build
+ ```bash
+  docker-compose up --build
+ ```
