@@ -1,0 +1,101 @@
+
+services:
+  # Serviço do Frontend (React para desenvolvimento)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - backend
+
+  # Serviço do Backend (FastAPI)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - sqlite_data:/app/data
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - DATABASE_PATH=/app/data/database.db
+      - PYTHONPATH=./src
+      - TZ=America/Sao_Paulo # Adicionado
+    entrypoint: ["./src/entrypoint.sh"] # Adicione esta linha
+     # Adicione a linha de comando aqui
+    command: ["poetry", "run", "uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8000"]
+    depends_on:
+      - redis
+      - celery_worker_default
+
+  # Serviço do Redis
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  # Serviço do Celery Worker para a fila 'serial_tasks'
+  celery_worker_serial:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    entrypoint: ["./src/entrypoint.sh"]
+    command: poetry run celery -A src.celery_app worker --loglevel=info -Q serial_tasks -c 1
+    volumes:
+      - sqlite_data:/app/data
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - DATABASE_PATH=/app/data/database.db
+      - PYTHONPATH=./src
+      - TZ=America/Sao_Paulo
+    depends_on:
+      - redis
+
+  # Serviço do Celery Worker para a fila 'default'
+  celery_worker_default:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    entrypoint: ["./src/entrypoint.sh"]
+    command: poetry run celery -A src.celery_app worker --loglevel=info -Q default
+    volumes:
+      - sqlite_data:/app/data
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - DATABASE_PATH=/app/data/database.db
+      - PYTHONPATH=./src
+      - TZ=America/Sao_Paulo
+    depends_on:
+      - redis
+      
+  # Serviço do Celery Beat para tarefas agendadas
+  celery_beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    entrypoint: ["./src/entrypoint.sh"]
+    command: poetry run celery -A src.celery_app beat --loglevel=info
+    volumes:
+      - sqlite_data:/app/data
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - DATABASE_PATH=/app/data/database.db
+      - PYTHONPATH=./src
+      - TZ=America/Sao_Paulo
+    depends_on:
+      - redis
+
+volumes:
+  sqlite_data:

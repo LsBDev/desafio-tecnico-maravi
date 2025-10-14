@@ -12,15 +12,18 @@ from datetime import datetime
 def start_notification_process():
   session: Session = next(get_session())
 
-  hoje = datetime.now().date()
+  # hoje = datetime.now().date()
+  hoje_str = datetime.now().date().isoformat()
+  print(f"Buscando notificações para a data: {hoje_str}")
 
   notifications = session.scalars(
     select(NotificationConfig).where(
       NotificationConfig.is_active == True,
-      NotificationConfig.notification_date == hoje
+      # NotificationConfig.notification_date == hoje_str
       )
     ).all() # virá como lista 
   # ver se tem notificação
+  print(f"Notificações no DB {notifications}")
   if not notifications:
     print("Sem notificações até o momento")
 

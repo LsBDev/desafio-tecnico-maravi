@@ -1,6 +1,6 @@
-from .database import engine
-from .models import table_registry
-from .utils.populate_municipal_lines import populate_municipal_lines
+from src.database import engine
+from src.models import table_registry
+from src.utils.populate_municipal_lines import populate_municipal_lines
 
 def create_database():
     table_registry.metadata.create_all(engine)

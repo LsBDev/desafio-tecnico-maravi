@@ -87,7 +87,16 @@ async def get_bus_position(linha: str, user_lat: float, user_long: float):
   onibus_da_linha_dict = {} 
   lista_onibus_filtrada= []
 
-  for bus in bus_data:
+  for raw_bus in bus_data:
+    if isinstance(raw_bus, str):
+        try:
+            bus = json.loads(raw_bus)
+        except json.JSONDecodeError:
+            # pular item inválido
+            continue
+    else:
+      bus = raw_bus
+
    
     if str(bus.get('linha')) == linha:
       ordem_do_onibus = bus.get('ordem')
