@@ -7,9 +7,9 @@ export default function(){
   return (
     <Nav>
       <Ul>
+        <Li to="/home">Meu Painel</Li>
         <Li to="/my-notifications">Meus Avisos</Li>
         <Li to="/my-locals">Meus Locais</Li>
-        <Li path="/home">Meu Painel</Li>
       </Ul>
     </Nav>
   )
