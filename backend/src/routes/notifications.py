@@ -1,4 +1,3 @@
-# Seu arquivo de rotas (ex: buses.py, mas aqui usaremos notifications.py)
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -24,21 +23,20 @@ async def get_user_notifications(
     ).all()
 
     # Converte os objetos do SQLAlchemy para dicionários antes de retornar
-    # (pode ser necessário se você não estiver usando um Pydantic model para a resposta)
     return [
-        {
-            "id": n.id,
-            "user_id": n.user_id,
-            "line_code": n.line_code,
-            "notification_date": n.notification_date,
-            "start_time": n.start_time,
-            "end_time": n.end_time,
-            "is_active": n.is_active,
-            "latitude": n.latitude,
-            "longitude": n.longitude,
-            "status": n.notification_status
-        }
-        for n in notifications
+      {
+        "id": n.id,
+        "user_id": n.user_id,
+        "line_code": n.line_code,
+        "notification_date": n.notification_date,
+        "start_time": n.start_time,
+        "end_time": n.end_time,
+        "is_active": n.is_active,
+        "latitude": n.latitude,
+        "longitude": n.longitude,
+        "status": n.notification_status
+      }
+      for n in notifications
     ]
 
 @router.patch("/{notification_id}")
@@ -48,9 +46,6 @@ async def update_notification_status(
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
-    """
-    Atualiza o status 'is_active' de uma notificação específica.
-    """
     notification = session.get(NotificationConfig, notification_id)
 
     if not notification:

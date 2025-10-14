@@ -24,14 +24,14 @@ class Settings(BaseSettings):
 settings = Settings()
 
 def setup_cors(app: FastAPI):
-    origins = [
-    settings.frontend_origin,
-    ]
+  origins = [
+  settings.frontend_origin,
+  ]
 
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=origins,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+  app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+  )

@@ -15,8 +15,6 @@ app.include_router(buses.router)
 app.include_router(notifications.router)
 
 
-# Rever a questão do .env -> Corrigir, está subindo para o github, não está no gitignore
-
 @app.get("/", status_code=HTTPStatus.OK)
 def root():
     return {'Health': 'Tudo Certo!'}

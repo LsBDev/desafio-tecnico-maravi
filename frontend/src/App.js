@@ -15,6 +15,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import LogoutButton from "./components/Logout.jsx"
 import NavBar from "./components/NavBar.jsx"
 import MyNotifications from "./Pages/MyNotifications.jsx"
+import MyLocals from "./Pages/MyLocals.jsx"
 
 export default function App() {
   const [token, setToken] = useState(localStorage.getItem("token"))
@@ -48,6 +49,7 @@ export default function App() {
                 <Route path="/signup" element={<SignUpPage/>}/>
                 <Route path="/home" element={<Home/>}/>
                 <Route path="/my-notifications" element={<MyNotifications/>}/>
+                <Route path="/my-locals" element={<MyLocals />} />
               </Routes>
             </BrowserRouter>
             <ToastContainer />    

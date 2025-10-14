@@ -3,7 +3,6 @@ from ..celery_app import celery_app
 from ..config import settings
 from ..database import get_session
 import redis
-# from sqlalchemy import select
 from sqlalchemy.orm import Session
 from ..models import NotificationConfig, User
 from datetime import datetime, time
@@ -22,7 +21,6 @@ def check_and_send_notification(notification_id):
   lock_key = f"lock:notification:{notification_id}"
   # Tenta adquirir o lock para esta notificação específica
   lock_acquired = r.set(lock_key, "locked", ex=10, nx=True)
-  print("Adquiriu o lock_key = linha 25 notification_tasks")
 
   if not lock_acquired:
     print(f"[{datetime.now()}] Notificação {notification_id} já está sendo processada por outro worker. Ignorando.")
@@ -32,8 +30,6 @@ def check_and_send_notification(notification_id):
   
   try:
     print(f"[{datetime.now()}] Lock adquirido. Processando notificação {notification_id}...")
-    
-    # Busca a notificação no banco de dados usando o ID
     notification = session.get(NotificationConfig, notification_id)
     
     if not notification:
@@ -49,9 +45,6 @@ def check_and_send_notification(notification_id):
       session.close()
       return
     
-
-    
-
     start_time_db = notification.start_time
     end_time_db = notification.end_time
 
@@ -60,16 +53,24 @@ def check_and_send_notification(notification_id):
     if not isinstance(end_time_db, time):
         end_time_db = datetime.strptime(str(end_time_db), '%H:%M:%S').time()
 
-    if hora_atual > end_time_db:
-      print(f"[{datetime.now()}] Janela de tempo da notificação {notification.id} expirou. Desativando...")
-      notification.is_active = False
-      notification.notification_status = "expired"
-      session.add(notification)
-      session.commit()
-      # session.refresh(notification)
-      # session.close()
-      # return
+    # Nova Lógica virada meia noite
+    start_in_minutes = start_time_db.hour * 60 + start_time_db.minute
+    end_in_minutes = end_time_db.hour * 60 + end_time_db.minute
+    current_in_minutes = hora_atual.hour * 60 + hora_atual.minute
 
+    if end_in_minutes < start_in_minutes:
+        end_in_minutes += 24 * 60
+
+    if current_in_minutes < start_in_minutes and end_in_minutes > start_in_minutes:
+        current_in_minutes += 24 * 60
+
+    # Agora a comparação funciona para todos os casos
+    if current_in_minutes > end_in_minutes:
+        print(f"[{datetime.now()}] Janela de tempo da notificação {notification.id} expirou. Desativando...")
+        notification.is_active = False
+        notification.notification_status = "expired"
+        session.add(notification)
+        session.commit()
 
 
     bus_data_raw = r.get("bus_data_current")
@@ -85,38 +86,28 @@ def check_and_send_notification(notification_id):
       session.close()
       return
 
-#=============================================================
-    # Inicializa um dicionário vazio para armazenar os ônibus, usando a ordem como chave
+
     onibus_da_linha_dict = {}
     onibus_da_linha = []
 
     
     for bus in bus_data:
-      # Verifica se a linha do ônibus corresponde à linha que você quer
+      # Verifica se a linha do ônibus corresponde à linha que o usuário quer
       if str(bus.get('linha')) == notification.line_code:
-
-#========================================
         ordem_do_onibus = bus.get('ordem')        
-        # Converte o timestamp para um número inteiro para comparação
         datahora_atual = int(bus.get('datahora'))
         if ordem_do_onibus in onibus_da_linha_dict:
-          # Pega o ônibus que já está no dicionário
           onibus_existente = onibus_da_linha_dict[ordem_do_onibus]
-          # Converte o timestamp do ônibus existente para comparação
           datahora_existente = int(onibus_existente.get('datahora'))            
-          # Se a data/hora atual for mais recente, substitui o ônibus no dicionário
           if datahora_atual > datahora_existente:
             onibus_da_linha_dict[ordem_do_onibus] = bus
         else:
-          # Se não existe, adiciona o ônibus ao dicionário
           onibus_da_linha_dict[ordem_do_onibus] = bus
-# Agora, converte os valores do dicionário de volta para uma lista
     onibus_da_linha = list(onibus_da_linha_dict.values())
 
 
-#=========================================
     print("Terminou de preencher o array de onibus - notification_tasks")
-    print(f"quantos onibus tem no array de onibus da linha:{len(onibus_da_linha)}") # LINHA QUE ME FEZ DESCOBRIR O ERRO
+    print(f"quantos onibus tem no array de onibus da linha:{len(onibus_da_linha)}")
     for onibus in onibus_da_linha:
 
       latitude_str = onibus.get('latitude').replace(',', '.')
@@ -125,14 +116,11 @@ def check_and_send_notification(notification_id):
       ponto_onibus = (float(latitude_str), float(longitude_str))
       ponto_usuario = (notification.latitude, notification.longitude)
       tempo_em_minutos = travel_time(ponto_onibus, ponto_usuario, settings.google_key)
-      print(f"linha 90 - Tempo vindo do Travel_time: {tempo_em_minutos} - notification_tasks")
-      print(f"Linha do onibus - {notification.line_code}")
-      print(f"Ordem do onibus - {onibus.get('ordem')}")
 
+      #Caiu na condição dos 10 minutos, Notificou ao usuário
       if tempo_em_minutos is not None and tempo_em_minutos <= 10:
         user = session.get(User, notification.user_id)
         if user:
-          print("Caiu na condição dos 10 minutos, Notificou ao usuário")
           send_email(user.username, user.email, notification.line_code, tempo_em_minutos)
           notification.is_active = False
           notification.notification_status = "completed"
@@ -140,7 +128,7 @@ def check_and_send_notification(notification_id):
           session.commit()
           session.refresh(notification)
           print(f"[{datetime.now()}] Notificação {notification.id} desativada após envio.")
-          break # sai do loop, achei um onibus, não preciso dos demais da linha
+          break 
       else:
         print(f"Sem notificação! Tempo de chegada {tempo_em_minutos:.0f}")
   except Exception as exc:

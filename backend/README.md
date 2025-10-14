@@ -1,71 +1,69 @@
-Este arquivo contém as instruções para configurar e executar o projeto de back-end.
+🚍 Avisa Aí | Backend (FastAPI, Celery & Redis)
+Este projeto contém a API REST e a lógica de processamento em segundo plano (background tasks) responsável por gerenciar as notificações de ônibus e o rastreamento em tempo real.
 
 1. Pré-requisitos
-Certifique-se de que você tem o Python e o Poetry instalados na sua máquina.
+Para configurar e executar o projeto, você precisa dos seguintes softwares instalados na sua máquina:
 
-Além disso, é necessário ter o Docker para rodar o servidor Redis, que é usado pelo Celery.
+- Python (v3.11+): Linguagem de programação.
+- Poetry: Gerenciador de dependências e ambiente virtual do Python.
+- Docker: Necessário para rodar o servidor Redis (broker do Celery).
 
-2. Instalação
-Clone o repositório:
+2. Instalação e Preparação
+Siga os passos abaixo para preparar o ambiente localmente.
 
-Bash
+➡️ Clone o Repositório
+git clone <https://github.com/LsBDev/desafio-tecnico-maravi.git>
+cd <desafio-tecnico-maravi>/backend
 
-git clone <URL_do_seu_repositorio>
-cd <nome_da_pasta>/backend
-Instale as dependências:
-O Poetry irá instalar todas as dependências e criar o ambiente virtual automaticamente.
+➡️ Instale as Dependências
+O Poetry irá instalar todas as dependências e criar o ambiente virtual isolado.
 
-Bash
+# poetry install
 
-poetry install
-3. Configuração
-Execute o comando abaixo para criar o arquivo database.db e as tabelas necessárias.
+➡️ Configure o Banco de Dados SQLite
+Crie o arquivo database.db e as tabelas necessárias para o projeto:
 
-Bash
+# poetry run python -m src.create_db
 
-poetry run python -m src.create_db
-4. Executando o Projeto
-Para rodar o projeto, você precisará de três terminais.
+3. Executando o Projeto
+Para colocar a aplicação em funcionamento, você precisará de múltiplos terminais para iniciar a API, o Redis e os serviços do Celery.
 
-Terminal 1: Iniciar o servidor Redis
-Use o Docker para iniciar o container do Redis.
+A. Iniciar o Broker (Redis)
+O Redis é usado como o broker de mensagens para o Celery.
 
-Bash
+# docker run --name my-redis-db -p 6379:6379 -d redis
+Dica: Se o container com o mesmo nome já existir, remova-o primeiro com: # docker rm my-redis-db.
 
-docker run --name my-redis-db -p 6379:6379 -d redis
-Se você precisar remover um container com o mesmo nome antes de criar um novo, use o comando: docker rm my-redis-db.
+B. Terminal 1: Iniciar o Servidor FastAPI (API)
+Inicia o servidor principal da sua API com hot-reload.
 
-Terminal 2: Iniciar o servidor FastAPI (API)
-Este comando inicia o servidor da sua API.
+# poetry run uvicorn src.app:app --reload
 
-Bash
+C. Terminais 2 e 3: Iniciar os Workers do Celery
+Abra dois novos terminais. O Celery precisa de workers separados para processar tarefas em diferentes filas.
 
-poetry run uvicorn src.app:app --reload
-Terminais 3 e 4: Iniciar os Workers e Beat do Celery
-Abra dois novos terminais. Um para o worker padrão e outro para as tarefas seriais.
+🛠️ Worker para Tarefas Seriais (Fila serial_tasks)
+Este worker é crucial para tarefas que devem ser processadas em ordem, como a leitura de dados ou a atualização de posição.
+=> Linux/macOS
+# poetry run celery -A src.celery_app worker --loglevel=info -Q serial_tasks -c 1
+=> Windows
+# poetry run celery -A src.celery_app worker --loglevel=info -Q serial_tasks -c 1 --pool=solo
 
-Worker para tarefas seriais:
+⚙️ Worker para Tarefas Padrão (Fila default)
+Este worker é usado para tarefas genéricas ou agendamentos mais leves.
+=> Linux/macOS
+# poetry run celery -A src.celery_app worker --loglevel=info -Q default
+=> Windows
+# poetry run celery -A src.celery_app worker --loglevel=info -Q default --pool=solo
 
-Bash
+D. Terminal 4: Iniciar o Celery Beat (Agendador)
+Este serviço é responsável por agendar e disparar as tarefas recorrentes (ex: a busca de dados a cada minuto).
 
-Linux: poetry run celery -A src.celery_app worker --loglevel=info -Q serial_tasks -c 1
-Worker para tarefas padrão:
-No win: poetry run celery -A src.celery_app worker --loglevel=info -Q serial_tasks -c 1 --pool=solo
+# poetry run celery -A src.celery_app beat
 
-Bash
+4. Comandos Adicionais
+➡️ Limpeza de Fila de Tarefas (Purge)
+Use estes comandos para limpar todas as tarefas pendentes das filas, caso necessário:
 
-Linux: poetry run celery -A src.celery_app worker --loglevel=info -Q default
-Win: poetry run celery -A src.celery_app worker --loglevel=info -Q default --pool=solo
-Terminal 5: Iniciar o Celery Beat (agendador)
-Este comando é responsável por agendar as tarefas recorrentes.
-
-Bash
-
-poetry run celery -A src.celery_app beat
-Comandos Adicionais (Opcionais)
-Limpar a fila de tarefas do Celery:
-
-Bash
-
-poetry run celery -A src.tasks.bus_data_tasks purge
-poetry run celery -A src.tasks.notification_tasks purge
+# poetry run celery -A src.tasks.bus_data_tasks purge
+# poetry run celery -A src.tasks.notification_tasks purge

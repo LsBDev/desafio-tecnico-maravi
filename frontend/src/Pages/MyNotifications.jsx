@@ -6,8 +6,6 @@ import { toast } from 'react-toastify'
 import AuthContext from "../contexts/AuthContext.js"
 import useQuickOut from "../hooks/useQuickout.jsx"
 
-const API_URL = process.env.REACT_APP_API_URL;
-
 export default function MyNotifications() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,7 +16,7 @@ export default function MyNotifications() {
   // Função para buscar as notificações do usuário
   const fetchNotifications = async () => {
     try {
-      const response = await axios.get(`${API_URL}/notifications/user`, {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/notifications/user`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -36,7 +34,6 @@ export default function MyNotifications() {
         window.location.reload() // Recarrega a página para limpar o estado
         return // Sai da função para não continuar o fluxo
       }
-
       console.error("Erro ao buscar notificações:", err.response)
       toast.error("Não foi possível carregar seus avisos.")
 
@@ -52,7 +49,7 @@ export default function MyNotifications() {
   const handleDelete = async (id) => {
     if (window.confirm("Tem certeza que deseja deletar este aviso?")) {
       try {
-        await axios.delete(`${API_URL}/notifications/${id}`, {
+        await axios.delete(`${process.env.REACT_APP_API_URL}/notifications/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -66,29 +63,41 @@ export default function MyNotifications() {
     }
   };
 
+  const sortedNotifications = [...notifications].sort((a, b) => {
+    // A.is_active é true (1) e B.is_active é false (0) -> 1 - 0 = 1 (A vai depois de B)
+    // Para que A (Ativo/true) vá PRIMEIRO, precisamos que o retorno seja -1.
+    // Invertemos a ordem de A e B na subtração.
+
+    // b.is_active - a.is_active:
+    // Se b for ativo (1) e a for inativo (0) -> 1 - 0 = 1 (b vem antes de a)
+    // Se a for ativo (1) e b for inativo (0) -> 0 - 1 = -1 (a vem antes de b)
+
+    return b.is_active - a.is_active;
+  });
+
   // Função para mudar o status de 'is_active'
-  const handleToggleActive = async (id, currentStatus) => {
-    const newStatus = !currentStatus;
-    try {
-      await axios.patch(
-        `${API_URL}/notifications/${id}`,
-        { is_active: newStatus },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      toast.success("Status do aviso atualizado!");
-      fetchNotifications(); // Recarrega a lista
-    } catch (err) {
-      console.error("Erro ao atualizar status:", err.response);
-      toast.error("Erro ao atualizar o status. Tente novamente.");
-    }
-  };
+  // const handleToggleActive = async (id, currentStatus) => {
+  //   const newStatus = !currentStatus;
+  //   try {
+  //     await axios.patch(
+  //       `${API_URL}/notifications/${id}`,
+  //       { is_active: newStatus },
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       }
+  //     );
+  //     toast.success("Status do aviso atualizado!");
+  //     fetchNotifications(); // Recarrega a lista
+  //   } catch (err) {
+  //     console.error("Erro ao atualizar status:", err.response);
+  //     toast.error("Erro ao atualizar o status. Tente novamente.");
+  //   }
+  // };
 
   if (loading) {
-    return <Container><p>Carregando seus avisos...</p></Container>;
+    return <Container><p>Carregando avisos...</p></Container>;
   }
 
   return (
@@ -96,8 +105,9 @@ export default function MyNotifications() {
       <MainContent>
         <Title>Histórico de Avisos</Title>
         <NotificationGrid>
-          {notifications.length > 0 ? (
-            notifications.map((n) => (
+          {sortedNotifications.length > 0 ? (
+            sortedNotifications.map((n) => (
+
               <NotificationCard key={n.id} isactive={n.is_active}>
                 <Info>
                   <strong>Linha:</strong> {n.line_code}
@@ -109,13 +119,17 @@ export default function MyNotifications() {
                   <strong>Horário:</strong> {n.start_time} - {n.end_time}
                 </Info>
                 <Info>
-                  <strong>Status: </strong>
+                  <strong>Notificação: </strong>
                   <StatusTag status={n.status}>{n.status == "active" ? "Agendado" : n.status == "completed" ? "Notificado" : "Expirado"}</StatusTag>
                 </Info>
+                <Info>
+                  <strong>Disponibilidade: </strong>
+                  <StatusTag status={n.is_active ? 'on' : 'off'}>{n.is_active ? "Ativa" : "Inativa"}</StatusTag>
+                </Info>
                 <ButtonContainer>
-                  <Button onClick={() => handleToggleActive(n.id, n.is_active)}>
+                  {/* <Button onClick={() => handleToggleActive(n.id, n.is_active)}>
                     {n.is_active ? "Desativar" : "Ativar"}
-                  </Button>
+                  </Button> */}
                   <Button onClick={() => handleDelete(n.id)} className="delete">
                     Deletar
                   </Button>
@@ -151,7 +165,7 @@ const MainContent = styled.div`
 `
 const Title = styled.h1`
   font-size: 2rem;
-  color: ${colors.white};
+  color: ${colors.black};
   font-weight: bold;
 `
 const NotificationGrid = styled.div`
@@ -164,11 +178,11 @@ const NotificationCard = styled.div`
   background: white;
   padding: 15px;
   border-radius: 0 10px 10px 0;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: ${colors.box_shadow};
   display: flex;
   flex-direction: column;
   gap: 5px;
-  border-left: 5px solid ${(props) => (props.isactive ? colors.primary : colors.red)};
+  border-left: 5px solid ${(props) => (props.isactive ? colors.primary : colors.darkOrange)};
 `
 const Info = styled.p`
   margin: 0;
@@ -178,11 +192,12 @@ const Info = styled.p`
 `
 const StatusTag = styled.span`
 display: inline-block;
-padding: 4px 8px;
+padding: 2px 4px;
 border-radius: 5px;
 font-weight: bold;
 // color: ${colors.black};
 background-color: ${colors.gray}
+
 `
 const ButtonContainer = styled.div`
   display: flex;
@@ -191,7 +206,6 @@ const ButtonContainer = styled.div`
   gap: 10px;
 `
 const Button = styled.button`
-  flex: 1;
   background: ${colors.primary_hover};
   color: ${colors.white};
   font-weight: 600;
@@ -205,7 +219,7 @@ const Button = styled.button`
     background: ${colors.primary};
   }
   &.delete {
-    background: ${colors.red};
+    background: ${colors.darkRed};
     &:hover {
       background: ${colors.darkRed};
     }

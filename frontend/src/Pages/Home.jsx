@@ -114,14 +114,12 @@ export default function Home() {
             return;
         }
     }
-    //===================================
 
     if(!token || !user) {
       toast.warn("Sua sessão expirou. Faça login novamente")
       navigate("/")
     }
     // API de geocodificação Nominatim
-    // const NOMINATIM_API_URL = "https://nominatim.openstreetmap.org/search"
     axios.get(process.env.REACT_APP_NOMINATIM_API_URL, {
       params: {
         q: `${ponto}, Rio de Janeiro`,
@@ -133,10 +131,7 @@ export default function Home() {
       if (geoResponse.data && geoResponse.data.length > 0) {
         const { lat, lon } = geoResponse.data[0];
         setUserPosition([lat, lon])
-
-//===================
-        localStorage.setItem('last_agendamento_user_position', JSON.stringify([lat, lon]));// MUDOU AQUI
-//====================
+        localStorage.setItem('last_agendamento_user_position', JSON.stringify([lat, lon])); 
 
         return axios.post(`${process.env.REACT_APP_API_URL}/buses/notification`, 
           { linha, latitude: lat, longitude: lon, data: dataNotificacao, hora_inicio: horaInicio, hora_fim: horaFim}, 
@@ -181,8 +176,8 @@ export default function Home() {
       <MainContent>        
         <Form onSubmit={buscaDadosOnibus}>
 
-          <FormLineContainer> {/* NOVO: Container para agrupar os campos de linha e select */}
-            <SelectWrapper> {/* NOVO: Wrapper para o select */}
+          <FormLineContainer> 
+            <SelectWrapper>
               <Label htmlFor="linha-select">Linha do ônibus</Label>
               <Select id="linha-select" disabled={disabled} onChange={(e) => {
                 setLinhaSelecionada(e.target.value);
@@ -194,7 +189,7 @@ export default function Home() {
                 ))}
               </Select>
             </SelectWrapper>
-            <LineOr> </LineOr> {/* NOVO: Texto "OU" */}
+            <LineOr> </LineOr> 
             <Input 
               placeholder="Digite a Linha" 
               type="text" 
@@ -207,8 +202,7 @@ export default function Home() {
             />
           </FormLineContainer>
 
-          <Input value={trajeto} placeholder="Trajeto da Linha" readOnly disabled={true} style={{ fontWeight: 'bold' }}/> 
-          {/* <Input placeholder="Linha" type="text" disabled={disabled} onChange={(e) => setLinha(e.target.value)} required/> */}
+          <Input value={trajeto} placeholder="Trajeto da Linha" readOnly disabled={true} style={{ fontWeight: 'bold' }}/>
           <Input
             placeholder="Partida (Ex.: Av. Rio Branco, 400)"
             type="text" disabled={disabled}  onChange={(e) => setPonto(e.target.value)}

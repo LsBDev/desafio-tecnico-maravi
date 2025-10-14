@@ -64,7 +64,6 @@ export default function LeafletMap({ linha_onibus, posicao_onibus, posicao_usuar
       {busPosition.map((bus) => {
         return (
           <Marker key={bus.ordem} position={[bus.latitude, bus.longitude]} icon={busIcon}>
-            {/* Adiciona um popup com informações do ônibus */}
             <Popup>
               Linha: {bus.linha} <br />
               Ordem: {bus.ordem} <br />

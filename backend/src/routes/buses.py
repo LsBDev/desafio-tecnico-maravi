@@ -83,40 +83,29 @@ async def get_bus_position(linha: str, user_lat: float, user_long: float):
       detail=f"Erro ao decodificar dados do Redis: {err}"
     )
     
-  #==================
-  #filtro pela linha
-  onibus_da_linha_dict = {} # dicionário para separar as várias aparições do mesmo onibus, (O timestamp pra ver o mais atual)
-  lista_onibus_filtrada= [] # armazena os onibus já filtrados
+
+  onibus_da_linha_dict = {} 
+  lista_onibus_filtrada= []
 
   for bus in bus_data:
-    # Verifica se a linha do ônibus corresponde à linha que você quer
+   
     if str(bus.get('linha')) == linha:
-
       ordem_do_onibus = bus.get('ordem')
-    # Converte o timestamp para um número inteiro para comparação
       datahora_atual = int(bus.get('datahora'))
       if ordem_do_onibus in onibus_da_linha_dict:
-        # Pega o ônibus que já está no dicionário
         onibus_existente = onibus_da_linha_dict[ordem_do_onibus]
-        # Converte o timestamp do ônibus existente para comparação
         datahora_existente = int(onibus_existente.get('datahora'))          
-        # Se a data/hora atual for mais recente, substitui o ônibus no dicionário
         if datahora_atual > datahora_existente:
           onibus_da_linha_dict[ordem_do_onibus] = bus
       else:
-        # Se não existe, adiciona o ônibus ao dicionário
         onibus_da_linha_dict[ordem_do_onibus] = bus
-# Agora, converte os valores do dicionário de volta para uma lista
   lista_onibus_filtrada= list(onibus_da_linha_dict.values())
 
 #==========
   if not lista_onibus_filtrada:
-    # return {"message": "Nenhum ônibus encontrado para a linha."}
     return []
 
-  # return lista_onibus_filtrada
 
-#================
   # Adiciona a informação de tempo a cada ônibus
   ponto_usuario = (user_lat, user_long)
   google_key = settings.google_key
@@ -142,10 +131,3 @@ async def get_bus_position(linha: str, user_lat: float, user_long: float):
     onibus_com_tempo.append(onibus)
 
   return onibus_com_tempo
-  #============
-
-  # except json.JSONDecodeError as err:
-  #   raise HTTPException(
-  #     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
-  #     detail=f"Erro ao decodificar dados do Redis: {err}"
-  #   )

@@ -8,7 +8,7 @@ export default function(){
     <Nav>
       <Ul>
         <Li to="/my-notifications">Meus Avisos</Li>
-        <Li>Meus Locais</Li>
+        <Li to="/my-locals">Meus Locais</Li>
       </Ul>
     </Nav>
   )
