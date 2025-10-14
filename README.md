@@ -22,3 +22,9 @@ Com o Docker Compose, todo o ambiente de desenvolvimento é orquestrado de forma
  ```bash
   docker-compose up --build
  ```
+
+ Obs.: Caso haja um erro de execução para src/entrypoint.sh é preciso habilitar a permissão do arquivo  "entrypoint.sh" para execução.
+ - Execute o comando na pasta na pasta src:
+ ```bash
+  chmod +x src/entrypoint.sh
+ ```
